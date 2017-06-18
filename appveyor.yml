@@ -1,0 +1,43 @@
+environment:
+  rabbitmq_download_url: https://www.rabbitmq.com/releases/rabbitmq-server/v3.5.2/rabbitmq-server-3.5.2.exe
+  rabbitmq_installer_path: C:\Users\appveyor\rabbitmq.exe
+
+cache:
+- "%rabbitmq_installer_path%"
+  
+install:
+- echo Downloading Rabbit...
+- ps: |
+    $webclient = New-Object System.Net.WebClient
+    if (-Not (Test-Path "$env:rabbitmq_installer_path")) {
+      $webclient.DownloadFile("$env:rabbitmq_download_url", "$env:rabbitmq_installer_path")
+    } else {
+      Write-Host "Found" $env:rabbitmq_installer_path "in cache."
+    }
+- echo Installing Rabbit...
+- start /B /WAIT %rabbitmq_installer_path% /S
+- ps: (Get-Service -Name RabbitMQ).Status
+
+version: 1.4.1.{build}
+image: Visual Studio 2017
+configuration: Release
+platform: Any CPU
+nuget:
+  disable_publish_on_pr: true
+before_build:
+- cmd: nuget restore
+build:
+  verbosity: normal
+after_build:
+- ps: nuget pack .\Orleans.Streams.RabbitMqStreamProvider\Orleans.Streams.RabbitMqStreamProvider.csproj -Build -properties "Configuration=Release;Platform=AnyCPU" -OutputDirectory .\artifacts -Version ${env:APPVEYOR_BUILD_VERSION}
+test: on
+artifacts:
+- path: .\artifacts\*.nupkg
+  name: Puhlish NuGets
+deploy:
+- provider: NuGet
+  server: https://www.nuget.org/api/v2/package
+  api_key:
+    secure: cjkBbuP0LYoH4nivxeHrhKf+0ge2twfXpKtyFxDzri+fBzN/9qDz0o2jXHC9NJ0a
+  skip_symbols: true
+  artifact: /.*\.nupkg/
