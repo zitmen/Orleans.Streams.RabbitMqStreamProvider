@@ -18,8 +18,7 @@ namespace Orleans.Streams
 
         public static byte[] ToQueueMessage<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, Dictionary<string, object> requestContext)
         {
-            var batchContainer = new RabbitMqBatchContainer(streamGuid, streamNamespace, events.Cast<object>().ToList(), requestContext);
-            return SerializationManager.SerializeToByteArray(batchContainer);
+            return SerializationManager.SerializeToByteArray(new RabbitMqBatchContainer(streamGuid, streamNamespace, events.Cast<object>().ToList(), requestContext));
         }
     }
 }

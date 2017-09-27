@@ -32,7 +32,15 @@ namespace Orleans.Streams
             {
                 var item = _consumer.Receive();
                 if (item == null) break;
-                batch.Add(RabbitMqDataAdapter.FromQueueMessage(item.Body, _sequenceId++, item.DeliveryTag));
+                try
+                {
+                    batch.Add(RabbitMqDataAdapter.FromQueueMessage(item.Body, _sequenceId++, item.DeliveryTag));
+                }
+                catch (Exception ex)
+                {
+                    _rmqConnectorFactory.Logger.Log(0, Runtime.Severity.Error, "GetQueueMessagesAsync: failed to deserialize the message! The message will be thrown away (by calling ACK).", null, ex);
+                    _consumer.Ack(item.DeliveryTag);
+                }
             }
             return Task.FromResult<IList<IBatchContainer>>(batch);
         }

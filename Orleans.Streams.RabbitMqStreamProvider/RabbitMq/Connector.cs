@@ -21,17 +21,39 @@ namespace Orleans.Streams.RabbitMq
 
         public void Ack(ulong deliveryTag)
         {
-            _connection.Channel.BasicAck(deliveryTag, false);
+            try
+            {
+                _connection.Channel.BasicAck(deliveryTag, false);
+            }
+            catch (Exception ex)
+            {
+                _connection.Logger.Error(0, "RabbitMqConsumer: failed to call ACK!", ex);
+            }
         }
 
         public void Nack(ulong deliveryTag)
         {
-            _connection.Channel.BasicNack(deliveryTag, false, true);
+            try
+            {
+                _connection.Channel.BasicNack(deliveryTag, false, true);
+            }
+            catch (Exception ex)
+            {
+                _connection.Logger.Error(0, "RabbitMqConsumer: failed to call NACK!", ex);
+            }
         }
 
         public BasicGetResult Receive()
         {
-            return _connection.Channel.BasicGet(_connection.QueueName, false);
+            try
+            {
+                return _connection.Channel.BasicGet(_connection.QueueName, false);
+            }
+            catch (Exception ex)
+            {
+                _connection.Logger.Error(0, "RabbitMqConsumer: failed to call Get!", ex);
+                return null;
+            }
         }
     }
 
@@ -51,22 +73,29 @@ namespace Orleans.Streams.RabbitMq
 
         public void Send(byte[] message)
         {
-            var basicProperties = _connection.Channel.CreateBasicProperties();
-            basicProperties.MessageId = Guid.NewGuid().ToString();
-            basicProperties.DeliveryMode = 2;   // persistent
+            try
+            {
+                var basicProperties = _connection.Channel.CreateBasicProperties();
+                basicProperties.MessageId = Guid.NewGuid().ToString();
+                basicProperties.DeliveryMode = 2;   // persistent
 
-            _connection.Channel.BasicPublish(string.Empty, _connection.QueueName, true, basicProperties, message);
+                _connection.Channel.BasicPublish(string.Empty, _connection.QueueName, true, basicProperties, message);
 
-            _connection.Channel.WaitForConfirmsOrDie(TimeSpan.FromSeconds(10));
+                _connection.Channel.WaitForConfirmsOrDie(TimeSpan.FromSeconds(10));
+            }
+            catch (Exception ex)
+            {
+                _connection.Logger.Error(0, "RabbitMqProducer: failed to call Publish!", ex);
+            }
         }
     }
 
     internal class RabbitMqConnector : IDisposable
     {
         public readonly string QueueName;
+        public readonly Logger Logger;
 
         private readonly RabbitMqStreamProviderOptions _options;
-        private readonly Logger _logger;
         private IConnection _connection;
         private IModel _channel;
 
@@ -83,14 +112,14 @@ namespace Orleans.Streams.RabbitMq
         {
             _options = options;
             QueueName = queueId.ToString();
-            _logger = logger;
+            Logger = logger;
         }
 
         private void EnsureConnection()
         {
             if (_connection?.IsOpen != true)
             {
-                _logger.Verbose("Opening a new RMQ connection...");
+                Logger.Verbose("Opening a new RMQ connection...");
                 var factory = new ConnectionFactory
                 {
                     HostName = _options.HostName,
@@ -104,7 +133,7 @@ namespace Orleans.Streams.RabbitMq
                 };
 
                 _connection = factory.CreateConnection();
-                _logger.Verbose("Connection created.");
+                Logger.Verbose("Connection created.");
                 _connection.ConnectionShutdown += OnConnectionShutdown;
                 _connection.ConnectionBlocked += OnConnectionBlocked;
                 _connection.ConnectionUnblocked += OnConnectionUnblocked;
@@ -112,11 +141,11 @@ namespace Orleans.Streams.RabbitMq
 
             if (_channel?.IsOpen != true)
             {
-                _logger.Verbose("Creating a model.");
+                Logger.Verbose("Creating a model.");
                 _channel = _connection.CreateModel();
                 _channel.QueueDeclare(QueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
                 _channel.ConfirmSelect();   // manual (N)ACK
-                _logger.Verbose("Model created.");
+                Logger.Verbose("Model created.");
             }
         }
 
@@ -132,23 +161,23 @@ namespace Orleans.Streams.RabbitMq
             }
             catch (Exception ex)
             {
-                _logger.Error(0, "Error during RMQ connection disposal.", ex);
+                Logger.Error(0, "Error during RMQ connection disposal.", ex);
             }
         }
 
         private void OnConnectionShutdown(object connection, ShutdownEventArgs reason)
         {
-            _logger.Error(0, $"Connection was shut down: [{reason.ReplyText}]");
+            Logger.Error(0, $"Connection was shut down: [{reason.ReplyText}]");
         }
 
         private void OnConnectionBlocked(object connection, ConnectionBlockedEventArgs reason)
         {
-            _logger.Error(0, $"Connection is blocked: [{reason.Reason}]");
+            Logger.Error(0, $"Connection is blocked: [{reason.Reason}]");
         }
 
         private void OnConnectionUnblocked(object connection, EventArgs args)
         {
-            _logger.Error(0, "Connection is not blocked any more.");
+            Logger.Error(0, "Connection is not blocked any more.");
         }
     }
 }
