@@ -32,21 +32,21 @@ namespace RabbitMqStreamTests
         {
             _sentMessages.Clear();
             _receivedMessages.Clear();
-            return TaskDone.Done;
+            return Task.CompletedTask;
         }
 
         public Task MessageSent(Immutable<Message> message)
         {
             GetLogger().Log(0, Orleans.Runtime.Severity.Info, $"MessageSent #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}]", null, null);
             _sentMessages.Add(message.Value.Id, message.Value);
-            return TaskDone.Done;
+            return Task.CompletedTask;
         }
 
         public Task MessageReceived(Immutable<Message> message)
         {
             GetLogger().Log(0, Orleans.Runtime.Severity.Info, $"MessageReceived #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}]", null, null);
             _receivedMessages.Add(message.Value.Id, message.Value);
-            return TaskDone.Done;
+            return Task.CompletedTask;
         }
 
         public Task<bool> WereAllMessagesSent(Immutable<Message[]> messages)

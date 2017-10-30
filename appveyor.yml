@@ -18,7 +18,13 @@ install:
 - start /B /WAIT %rabbitmq_installer_path% /S
 - ps: (Get-Service -Name RabbitMQ).Status
 
-version: 1.4.1.{build}
+version: 1.5.1.{build}
+assembly_info:
+  patch: true
+  file: AssemblyInfo.cs
+  assembly_version: "{version}"
+  assembly_file_version: "{version}"
+  assembly_informational_version: "{version}"
 image: Visual Studio 2017
 configuration: Release
 platform: Any CPU

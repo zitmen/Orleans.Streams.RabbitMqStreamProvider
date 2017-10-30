@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans.Runtime;
+using Orleans.Serialization;
 using Orleans.Streams.RabbitMq;
 
 namespace Orleans.Streams
@@ -18,12 +19,14 @@ namespace Orleans.Streams
     /// </summary>
     internal class RabbitMqAdapter : IQueueAdapter
     {
+        private readonly SerializationManager _serializationManager;
         private readonly IStreamQueueMapper _mapper;
         private readonly ConcurrentDictionary<Tuple<int, QueueId>, IRabbitMqProducer> _queues = new ConcurrentDictionary<Tuple<int, QueueId>, IRabbitMqProducer>();
         private readonly IRabbitMqConnectorFactory _rmqConnectorFactory;
 
-        public RabbitMqAdapter(RabbitMqStreamProviderOptions options, IStreamQueueMapper mapper, string providerName, Logger logger)
+        public RabbitMqAdapter(RabbitMqStreamProviderOptions options, SerializationManager serializationManager, IStreamQueueMapper mapper, string providerName, Logger logger)
         {
+            _serializationManager = serializationManager;
             _mapper = mapper;
             Name = providerName;
             _rmqConnectorFactory = new RabbitMqOnlineConnectorFactory(options, logger);
@@ -32,7 +35,7 @@ namespace Orleans.Streams
         public string Name { get; }
         public bool IsRewindable => false;
         public StreamProviderDirection Direction => StreamProviderDirection.ReadWrite;
-        public IQueueAdapterReceiver CreateReceiver(QueueId queueId) => new RabbitMqAdapterReceiver(_rmqConnectorFactory, queueId);
+        public IQueueAdapterReceiver CreateReceiver(QueueId queueId) => new RabbitMqAdapterReceiver(_rmqConnectorFactory, queueId, _serializationManager);
 
         public Task QueueMessageBatchAsync<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
         {
@@ -40,13 +43,12 @@ namespace Orleans.Streams
             
             var queueId = _mapper.GetQueueForStream(streamGuid, streamNamespace);
             var key = new Tuple<int, QueueId>(Thread.CurrentThread.ManagedThreadId, queueId);
-            IRabbitMqProducer rmq;
-            if (!_queues.TryGetValue(key, out rmq))
+            if (!_queues.TryGetValue(key, out var rmq))
             {
                 rmq = _queues.GetOrAdd(key, _rmqConnectorFactory.CreateProducer(queueId));
             }
-            rmq.Send(RabbitMqDataAdapter.ToQueueMessage(streamGuid, streamNamespace, events, requestContext));
-            return TaskDone.Done;
+            rmq.Send(RabbitMqDataAdapter.ToQueueMessage(_serializationManager, streamGuid, streamNamespace, events, requestContext));
+            return Task.CompletedTask;
         }
     }
 }

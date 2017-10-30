@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Orleans.Serialization;
 using Orleans.Streams.RabbitMq;
 
 namespace Orleans.Streams
@@ -9,20 +10,22 @@ namespace Orleans.Streams
     {
         private readonly IRabbitMqConnectorFactory _rmqConnectorFactory;
         private readonly QueueId _queueId;
+        private readonly SerializationManager _serializationManager;
         private long _sequenceId;
         private IRabbitMqConsumer _consumer;
 
-        public RabbitMqAdapterReceiver(IRabbitMqConnectorFactory rmqConnectorFactory, QueueId queueId)
+        public RabbitMqAdapterReceiver(IRabbitMqConnectorFactory rmqConnectorFactory, QueueId queueId, SerializationManager serializationManager)
         {
             _rmqConnectorFactory = rmqConnectorFactory;
             _queueId = queueId;
+            _serializationManager = serializationManager;
             _sequenceId = 0;
         }
 
         public Task Initialize(TimeSpan timeout)
         {
             _consumer = _rmqConnectorFactory.CreateConsumer(_queueId);
-            return TaskDone.Done;
+            return Task.CompletedTask;
         }
 
         public Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)
@@ -34,7 +37,7 @@ namespace Orleans.Streams
                 if (item == null) break;
                 try
                 {
-                    batch.Add(RabbitMqDataAdapter.FromQueueMessage(item.Body, _sequenceId++, item.DeliveryTag));
+                    batch.Add(RabbitMqDataAdapter.FromQueueMessage(_serializationManager, item.Body, _sequenceId++, item.DeliveryTag));
                 }
                 catch (Exception ex)
                 {
@@ -62,13 +65,13 @@ namespace Orleans.Streams
                     _consumer.Ack(tag);
                 }
             }
-            return TaskDone.Done;
+            return Task.CompletedTask;
         }
 
         public Task Shutdown(TimeSpan timeout)
         {
             _consumer.Dispose();
-            return TaskDone.Done;
+            return Task.CompletedTask;
         }
     }
 }

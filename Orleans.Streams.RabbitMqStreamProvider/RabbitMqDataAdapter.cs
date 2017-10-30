@@ -8,17 +8,17 @@ namespace Orleans.Streams
 {
     public static class RabbitMqDataAdapter
     {
-        public static RabbitMqBatchContainer FromQueueMessage(byte[] data, long sequenceId, ulong deliveryTag)
+        public static RabbitMqBatchContainer FromQueueMessage(SerializationManager serializationManager, byte[] data, long sequenceId, ulong deliveryTag)
         {
-            var batchContainer = SerializationManager.DeserializeFromByteArray<RabbitMqBatchContainer>(data);
+            var batchContainer = serializationManager.DeserializeFromByteArray<RabbitMqBatchContainer>(data);
             batchContainer.EventSequenceToken = new EventSequenceToken(sequenceId);
             batchContainer.DeliveryTag = deliveryTag;
             return batchContainer;
         }
 
-        public static byte[] ToQueueMessage<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, Dictionary<string, object> requestContext)
+        public static byte[] ToQueueMessage<T>(SerializationManager serializationManager, Guid streamGuid, string streamNamespace, IEnumerable<T> events, Dictionary<string, object> requestContext)
         {
-            return SerializationManager.SerializeToByteArray(new RabbitMqBatchContainer(streamGuid, streamNamespace, events.Cast<object>().ToList(), requestContext));
+            return serializationManager.SerializeToByteArray(new RabbitMqBatchContainer(streamGuid, streamNamespace, events.Cast<object>().ToList(), requestContext));
         }
     }
 }

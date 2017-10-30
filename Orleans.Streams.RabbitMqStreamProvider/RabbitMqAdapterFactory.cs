@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Orleans.Providers;
 using Orleans.Runtime;
+using Orleans.Serialization;
 using Orleans.Streams.Cache;
 
 namespace Orleans.Streams
@@ -26,7 +28,7 @@ namespace Orleans.Streams
             _cache = new BucketQueueAdapterCache(_options.CacheSize, _options.CacheNumberOfBuckets, logger);
             _mapper = new HashRingBasedStreamQueueMapper(_options.NumberOfQueues, _options.QueueNamePrefix);
             _failureHandler = Task.FromResult<IStreamFailureHandler>(new NoOpStreamDeliveryFailureHandler(false));
-            _adapter = new RabbitMqAdapter(_options, _mapper, _providerName, logger);
+            _adapter = new RabbitMqAdapter(_options, serviceProvider.GetRequiredService<SerializationManager>(), _mapper, _providerName, logger);
         }
 
         public Task<IQueueAdapter> CreateAdapter() => Task.FromResult(_adapter);
