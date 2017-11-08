@@ -22,10 +22,16 @@ namespace Orleans.Streams.Cache
         {
             NumCurrentItems = NumCurrentItems + val;
         }
+
+        private readonly object _syncRoot = new object();
+        
         internal void UpdateNumCursors(int val)
         {
-            ConsumptionStarted = ConsumptionStarted || val > 0;
-            NumCurrentCursors = NumCurrentCursors + val;
+            lock (_syncRoot)
+            {
+                ConsumptionStarted = ConsumptionStarted || val > 0;
+                NumCurrentCursors = NumCurrentCursors + val;
+            }
         }
     }
 
@@ -239,14 +245,14 @@ namespace Orleans.Streams.Cache
 
         private void AdvanceCursor(BucketQueueCacheCursor cursor, LinkedListNode<QueueCacheItem> item)
         {
-            Log(_logger, "UpdateCursor: {0} to item {1}", cursor, item.Value.Batch);
+            Log(_logger, "UpdateCursor: {0} to item {1}", cursor, item?.Value.Batch);
 
             cursor.Set(item);
         }
 
         internal void SetCursor(BucketQueueCacheCursor cursor, LinkedListNode<QueueCacheItem> item)
         {
-            Log(_logger, "SetCursor: {0} to item {1}", cursor, item.Value.Batch);
+            Log(_logger, "SetCursor: {0} to item {1}", cursor, item?.Value.Batch);
 
             cursor.Set(item);
         }

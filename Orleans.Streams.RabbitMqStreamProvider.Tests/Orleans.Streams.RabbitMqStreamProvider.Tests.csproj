@@ -40,6 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AggregatorGrain.cs" />
+    <Compile Include="CacheTests.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="ReceiverGrain.cs" />
