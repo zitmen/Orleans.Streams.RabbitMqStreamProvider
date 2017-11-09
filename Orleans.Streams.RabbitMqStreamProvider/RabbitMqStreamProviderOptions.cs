@@ -11,7 +11,6 @@ namespace Orleans.Streams
         public readonly string UserName;
         public readonly string Password;
         public readonly int CacheSize;
-        public readonly int CacheNumberOfBuckets;
         public readonly int NumberOfQueues;
         public readonly string QueueNamePrefix;
         
@@ -29,7 +28,6 @@ namespace Orleans.Streams
             UserName = config.GetProperty(nameof(UserName), string.Empty);
             Password = config.GetProperty(nameof(Password), string.Empty);
             CacheSize = config.GetIntProperty(nameof(CacheSize), DefaultCacheSize);
-            CacheNumberOfBuckets = config.GetIntProperty(nameof(CacheNumberOfBuckets), DefaultCacheNumberOfBuckets);
             QueueNamePrefix = config.GetProperty(nameof(QueueNamePrefix), string.Empty);
             NumberOfQueues = config.GetIntProperty(nameof(NumberOfQueues), DefaultNumberOfQueues);
         }
@@ -38,7 +36,6 @@ namespace Orleans.Streams
         private const string DefaultVirtualHost = "/";
         private const int DefaultPort = 5672;
         private const int DefaultCacheSize = 4000;
-        private const int DefaultCacheNumberOfBuckets = 10;
         private const int DefaultNumberOfQueues = 1;
     }
 }

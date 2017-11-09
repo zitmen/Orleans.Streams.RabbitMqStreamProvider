@@ -25,7 +25,7 @@ namespace Orleans.Streams
 
             _options = new RabbitMqStreamProviderOptions(config);
             _providerName = providerName;
-            _cache = new BucketQueueAdapterCache(_options.CacheSize, _options.CacheNumberOfBuckets, logger);
+            _cache = new ConcurrentQueueAdapterCache(_options.CacheSize);
             _mapper = new HashRingBasedStreamQueueMapper(_options.NumberOfQueues, _options.QueueNamePrefix);
             _failureHandler = Task.FromResult<IStreamFailureHandler>(new NoOpStreamDeliveryFailureHandler(false));
             _adapter = new RabbitMqAdapter(_options, serviceProvider.GetRequiredService<SerializationManager>(), _mapper, _providerName, logger);

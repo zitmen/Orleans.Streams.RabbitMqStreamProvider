@@ -123,8 +123,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cache\BucketQueueAdapterCache.cs" />
-    <Compile Include="Cache\BucketQueueCacheCursor.cs" />
+    <Compile Include="Cache\ConcurrentQueueAdapterCache.cs" />
+    <Compile Include="Cache\ConcurrentQueueCacheCursor.cs" />
     <Compile Include="RabbitMq\ConnectorFactory.cs" />
     <Compile Include="RabbitMq\Interfaces.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -136,7 +136,7 @@
     <Compile Include="RabbitMqStreamProvider.cs" />
     <Compile Include="RabbitMqStreamProviderOptions.cs" />
     <Compile Include="RabbitMq\Connector.cs" />
-    <Compile Include="Cache\BucketQueueCache.cs" />
+    <Compile Include="Cache\ConcurrentQueueCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

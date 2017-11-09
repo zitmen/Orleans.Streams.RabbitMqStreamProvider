@@ -11,7 +11,7 @@ using Orleans.TestingHost;
 namespace RabbitMqStreamTests
 {
     [TestClass]
-    public class Tests
+    public class RmqIntegrationTests
     {
         [Ignore]
         [TestMethod]
@@ -33,7 +33,7 @@ namespace RabbitMqStreamTests
             int iters = 0;
             while (!await AllMessagesSentAndDelivered(aggregator, messages) && iters < 10)
             {
-                iters++;
+                //iters++;
                 await Task.Delay(TimeSpan.FromSeconds(10));
             }
 
@@ -57,7 +57,7 @@ namespace RabbitMqStreamTests
             int iters = 0;
             while (!await AllMessagesSentAndDelivered(aggregator, messages) && iters < 10)
             {
-                iters++;
+                //iters++;
                 await Task.Delay(TimeSpan.FromSeconds(10));
             }
 
@@ -90,7 +90,6 @@ namespace RabbitMqStreamTests
                     { "QueueNamePrefix", "test" },
                     { "NumberOfQueues", "2" },
                     { "CacheSize", "100" },
-                    { "CacheNumberOfBuckets", "10" },
                     { PersistentStreamProviderConfig.STREAM_PUBSUB_TYPE, StreamPubSubType.ImplicitOnly.ToString() }
                 });
 
@@ -103,6 +102,7 @@ namespace RabbitMqStreamTests
         public static void ClassInitialize(TestContext context)
         {
             _cluster = CreateClusterOptions().CreateTestCluster();
+            // TODO: ensure empty RMQ
         }
 
         [ClassCleanup]

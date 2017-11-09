@@ -46,7 +46,7 @@
     <Compile Include="ReceiverGrain.cs" />
     <Compile Include="SenderGrain.cs" />
     <Compile Include="TestClusterUtils.cs" />
-    <Compile Include="Tests.cs" />
+    <Compile Include="RmqIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

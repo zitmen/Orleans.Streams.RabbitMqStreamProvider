@@ -19,8 +19,6 @@ using System.Runtime.InteropServices;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
-[assembly: InternalsVisibleTo("Orleans.Streams.RabbitMqStreamProvider.Tests")]
-
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("3c698a71-6cb9-458e-bfa8-e94735733a4e")]
 
