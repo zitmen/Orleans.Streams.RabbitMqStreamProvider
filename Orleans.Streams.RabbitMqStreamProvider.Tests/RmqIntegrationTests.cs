@@ -10,10 +10,10 @@ using Orleans.TestingHost;
 
 namespace RabbitMqStreamTests
 {
+    [Ignore]
     [TestClass]
     public class RmqIntegrationTests
     {
-        [Ignore]
         [TestMethod]
         public async Task TestConcurrentProcessingWithPrefilledQueue()
         {
@@ -41,7 +41,6 @@ namespace RabbitMqStreamTests
             Assert.AreEqual(2, await aggregator.GetProcessingSilosCount());
         }
 
-        [Ignore]
         [TestMethod]
         public async Task TestConcurrentProcessingOnFly()
         {

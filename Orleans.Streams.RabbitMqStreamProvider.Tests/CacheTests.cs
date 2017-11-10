@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,6 +29,40 @@ namespace RabbitMqStreamTests
             {
                 await TestOrleansCacheWriteHeavyUsage();
             }
+        }
+
+        [TestMethod]
+        public async Task TestOrleansCacheCursorReadHeavyUsage()
+        {
+            int cacheSize = 1000000;
+            var queueCache = new ConcurrentQueueCache(cacheSize);
+            queueCache.AddToCache(GetQueueMessages(queueCache.GetMaxAddCount()));
+
+            var watch = Stopwatch.StartNew();
+            using (var cursor = queueCache.GetCacheCursor(StreamIdentity, null))
+            {
+                var tasks = new List<Task>();
+                for (int i = 0; i < 10; i++)
+                {
+                    tasks.Add(Task.Run(() =>
+                    {
+                        while (cursor.MoveNext())
+                        {
+                            var batch = cursor.GetCurrent(out var ignore);
+                        }
+                    }));
+                }
+
+                await Task.WhenAll(tasks);
+            }
+            watch.Stop();
+            Console.WriteLine($"Read {cacheSize} items in {watch.ElapsedMilliseconds} ms");
+            // without locking ~170ms, with locking ~680ms, thus ~4x slower
+
+            queueCache.TryPurgeFromCache(out var finalPurgedItems);
+
+            Assert.AreEqual(cacheSize, finalPurgedItems.Count, "purged items");
+            Assert.AreEqual(cacheSize, queueCache.GetMaxAddCount(), "cache size");
         }
 
         private async Task TestOrleansCacheReadHeavyUsage()

@@ -7,6 +7,8 @@ namespace Orleans.Streams.Cache
         private readonly Func<RabbitMqBatchContainer> _moveNext;
         private readonly Action<RabbitMqBatchContainer> _purgeItem;
 
+        private readonly object _syncRoot = new object();
+
         private RabbitMqBatchContainer _current;
 
         public ConcurrentQueueCacheCursor(Func<RabbitMqBatchContainer> moveNext, Action<RabbitMqBatchContainer> purgeItem)
@@ -17,8 +19,11 @@ namespace Orleans.Streams.Cache
 
         public void Dispose()
         {
-            _purgeItem(_current);
-            _current = null;
+            lock (_syncRoot)
+            {
+                _purgeItem(_current);
+                _current = null;
+            }
         }
 
         public IBatchContainer GetCurrent(out Exception exception)
@@ -29,8 +34,11 @@ namespace Orleans.Streams.Cache
 
         public bool MoveNext()
         {
-            _purgeItem(_current);
-            _current = _moveNext();
+            lock (_syncRoot)
+            {
+                _purgeItem(_current);
+                _current = _moveNext();
+            }
             return _current != null;
         }
 
