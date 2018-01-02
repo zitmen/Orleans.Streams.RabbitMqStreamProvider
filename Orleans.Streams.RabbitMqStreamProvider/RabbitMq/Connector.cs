@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Orleans.Runtime;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -23,6 +24,8 @@ namespace Orleans.Streams.RabbitMq
         {
             try
             {
+                _connection.Logger.Verbose(0, $"RabbitMqConsumer: calling Ack on thread {Thread.CurrentThread.Name}.");
+
                 _connection.Channel.BasicAck(deliveryTag, false);
             }
             catch (Exception ex)
@@ -35,6 +38,8 @@ namespace Orleans.Streams.RabbitMq
         {
             try
             {
+                _connection.Logger.Verbose(0, $"RabbitMqConsumer: calling Nack on thread {Thread.CurrentThread.Name}.");
+
                 _connection.Channel.BasicNack(deliveryTag, false, true);
             }
             catch (Exception ex)
@@ -75,6 +80,8 @@ namespace Orleans.Streams.RabbitMq
         {
             try
             {
+                _connection.Logger.Verbose(0, $"RabbitMqProducer: calling Send on thread {Thread.CurrentThread.Name}.");
+
                 var basicProperties = _connection.Channel.CreateBasicProperties();
                 basicProperties.MessageId = Guid.NewGuid().ToString();
                 basicProperties.DeliveryMode = 2;   // persistent
@@ -85,7 +92,7 @@ namespace Orleans.Streams.RabbitMq
             }
             catch (Exception ex)
             {
-                _connection.Logger.Error(0, "RabbitMqProducer: failed to call Publish!", ex);
+                throw new RabbitMqException("RabbitMqProducer: Send failed!", ex);
             }
         }
     }
@@ -167,17 +174,17 @@ namespace Orleans.Streams.RabbitMq
 
         private void OnConnectionShutdown(object connection, ShutdownEventArgs reason)
         {
-            Logger.Error(0, $"Connection was shut down: [{reason.ReplyText}]");
+            Logger.Warn(0, $"Connection was shut down: [{reason.ReplyText}]");
         }
 
         private void OnConnectionBlocked(object connection, ConnectionBlockedEventArgs reason)
         {
-            Logger.Error(0, $"Connection is blocked: [{reason.Reason}]");
+            Logger.Warn(0, $"Connection is blocked: [{reason.Reason}]");
         }
 
         private void OnConnectionUnblocked(object connection, EventArgs args)
         {
-            Logger.Error(0, "Connection is not blocked any more.");
+            Logger.Warn(0, "Connection is not blocked any more.");
         }
     }
 }

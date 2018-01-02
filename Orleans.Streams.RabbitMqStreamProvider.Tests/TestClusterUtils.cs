@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
+using Orleans.Storage;
+using Orleans.Streams;
 using Orleans.TestingHost;
 
 namespace RabbitMqStreamTests
@@ -30,6 +33,30 @@ namespace RabbitMqStreamTests
                     "Orleans.Streams.RabbitMqStreamProvider",
                     Globals.StreamProviderName,
                     (int)PersistentStreamProviderCommand.StopAgents);
+        }
+
+        public static TestClusterOptions CreateClusterOptions()
+        {
+            var options = new TestClusterOptions(2);
+
+            options.ClusterConfiguration.Globals.UseLivenessGossip = false;
+            options.ClusterConfiguration.Globals.RegisterStorageProvider<MemoryStorage>("PubSubStore");
+            options.ClusterConfiguration.Globals.RegisterStreamProvider<RabbitMqStreamProvider>(Globals.StreamProviderName,
+                new Dictionary<string, string>
+                {
+                    { "HostName", "localhost" },
+                    { "Port", ToxiProxyHelpers.RmqProxyPort.ToString() },
+                    { "VirtualHost", "/" },
+                    { "UserName", "guest" },
+                    { "Password", "guest" },
+                    { "GetQueueMessagesTimerPeriod", "100ms" },
+                    { "QueueNamePrefix", "test" },
+                    { "NumberOfQueues", "1" },
+                    { "CacheSize", "100" },
+                    { PersistentStreamProviderConfig.STREAM_PUBSUB_TYPE, StreamPubSubType.ImplicitOnly.ToString() }
+                });
+
+            return options;
         }
 
         public static TestCluster CreateTestCluster(this TestClusterOptions options)

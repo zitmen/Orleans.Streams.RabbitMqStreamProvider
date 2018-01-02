@@ -23,6 +23,7 @@ namespace Orleans.Streams
         private readonly IStreamQueueMapper _mapper;
         private readonly ConcurrentDictionary<Tuple<int, QueueId>, IRabbitMqProducer> _queues = new ConcurrentDictionary<Tuple<int, QueueId>, IRabbitMqProducer>();
         private readonly IRabbitMqConnectorFactory _rmqConnectorFactory;
+        private readonly TimeSpan _cacheFillingTimeout;
 
         public RabbitMqAdapter(RabbitMqStreamProviderOptions options, SerializationManager serializationManager, IStreamQueueMapper mapper, string providerName, Logger logger)
         {
@@ -30,12 +31,13 @@ namespace Orleans.Streams
             _mapper = mapper;
             Name = providerName;
             _rmqConnectorFactory = new RabbitMqOnlineConnectorFactory(options, logger);
+            _cacheFillingTimeout = options.CacheFillingTimeout;
         }
 
         public string Name { get; }
         public bool IsRewindable => false;
         public StreamProviderDirection Direction => StreamProviderDirection.ReadWrite;
-        public IQueueAdapterReceiver CreateReceiver(QueueId queueId) => new RabbitMqAdapterReceiver(_rmqConnectorFactory, queueId, _serializationManager);
+        public IQueueAdapterReceiver CreateReceiver(QueueId queueId) => new RabbitMqAdapterReceiver(_rmqConnectorFactory, queueId, _serializationManager, _cacheFillingTimeout);
 
         public Task QueueMessageBatchAsync<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
         {

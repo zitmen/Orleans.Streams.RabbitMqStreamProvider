@@ -1,112 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Orleans.Concurrency;
-using Orleans.Storage;
-using Orleans.Streams;
 using Orleans.TestingHost;
+using static RabbitMqStreamTests.ToxiProxyHelpers;
+using static RabbitMqStreamTests.TestClusterUtils;
 
 namespace RabbitMqStreamTests
 {
-    [Ignore]
+    //[Ignore]
     [TestClass]
     public class RmqIntegrationTests
     {
         [TestMethod]
         public async Task TestConcurrentProcessingWithPrefilledQueue()
         {
-            await _cluster.StopPullingAgents();
-
-            var rand = new Random();
-            var messages = Enumerable.Range(1, 1000).Select(id => new Message(id, rand.Next(1, 5) * 1000)).ToArray();
-
-            var aggregator = _cluster.GrainFactory.GetGrain<IAggregatorGrain>(Guid.Empty);
-            await aggregator.CleanUp(); // has to be done here, because the sender is also accessing the aggregator
-
-            var sender = _cluster.GrainFactory.GetGrain<ISenderGrain>(Guid.Empty);
-            await Task.WhenAll(messages.Select(msg => sender.SendMessage(msg.AsImmutable())));
-
-            await _cluster.StartPullingAgents();
-
-            int iters = 0;
-            while (!await AllMessagesSentAndDelivered(aggregator, messages) && iters < 10)
-            {
-                //iters++;
-                await Task.Delay(TimeSpan.FromSeconds(10));
-            }
-
-            Assert.IsTrue(await AllMessagesSentAndDelivered(aggregator, messages));
-            Assert.AreEqual(2, await aggregator.GetProcessingSilosCount());
+            await _cluster.TestRmqStreamProviderWithPrefilledQueue(
+                conn => { },
+                conn => { },
+                1000, 10);
         }
 
         [TestMethod]
         public async Task TestConcurrentProcessingOnFly()
         {
-            var rand = new Random();
-            var messages = Enumerable.Range(1, 1000).Select(id => new Message(id, rand.Next(1, 5) * 1000)).ToArray();
-
-            var aggregator = _cluster.GrainFactory.GetGrain<IAggregatorGrain>(Guid.Empty);
-            await aggregator.CleanUp(); // has to be done here, because the sender is also accessing the aggregator
-
-            var sender = _cluster.GrainFactory.GetGrain<ISenderGrain>(Guid.Empty);
-            await Task.WhenAll(messages.Select(msg => sender.SendMessage(msg.AsImmutable())));
-
-            int iters = 0;
-            while (!await AllMessagesSentAndDelivered(aggregator, messages) && iters < 10)
-            {
-                //iters++;
-                await Task.Delay(TimeSpan.FromSeconds(10));
-            }
-
-            Assert.IsTrue(await AllMessagesSentAndDelivered(aggregator, messages));
-            Assert.AreEqual(2, await aggregator.GetProcessingSilosCount());
+            await _cluster.TestRmqStreamProviderOnFly(
+                conn => { },
+                1000, 10);
         }
-
-        private static async Task<bool> AllMessagesSentAndDelivered(IAggregatorGrain aggregator, Message[] messages)
-            => await aggregator.WereAllMessagesSent(messages.AsImmutable()) &&
-               await aggregator.WereAllSentAlsoDelivered();
-
-
-        #region Test cluster control
-
-        private static TestClusterOptions CreateClusterOptions()
-        {
-            var options = new TestClusterOptions(2);
-
-            options.ClusterConfiguration.Globals.UseLivenessGossip = false;
-            options.ClusterConfiguration.Globals.RegisterStorageProvider<MemoryStorage>("PubSubStore");
-            options.ClusterConfiguration.Globals.RegisterStreamProvider<RabbitMqStreamProvider>(Globals.StreamProviderName,
-                new Dictionary<string, string>
-                {
-                    { "HostName", "localhost" },
-                    { "Port", "5672" },
-                    { "VirtualHost", "/" },
-                    { "UserName", "guest" },
-                    { "Password", "guest" },
-                    { "GetQueueMessagesTimerPeriod", "100ms" },
-                    { "QueueNamePrefix", "test" },
-                    { "NumberOfQueues", "2" },
-                    { "CacheSize", "100" },
-                    { PersistentStreamProviderConfig.STREAM_PUBSUB_TYPE, StreamPubSubType.ImplicitOnly.ToString() }
-                });
-
-            return options;
-        }
+        
+        #region Test class setup
 
         private static TestCluster _cluster;
+        private static Process _proxyProcess;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            _cluster = CreateClusterOptions().CreateTestCluster();
             // TODO: ensure empty RMQ
+
+            // ToxiProxy
+            _proxyProcess = StartProxy();
+
+            // Orleans cluster
+            _cluster = CreateClusterOptions().CreateTestCluster();
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            // close first to avoid a case where Silo hangs, I stop the test and the proxy process keeps running
+            _proxyProcess.CloseMainWindow();
+            _proxyProcess.WaitForExit();
+
             _cluster.Shutdown();
         }
 
