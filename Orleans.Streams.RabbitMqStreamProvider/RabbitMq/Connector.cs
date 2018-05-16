@@ -135,7 +135,7 @@ namespace Orleans.Streams.RabbitMq
                     UserName = _options.UserName,
                     Password = _options.Password,
                     UseBackgroundThreadsForIO = false,
-                    AutomaticRecoveryEnabled = true,
+                    AutomaticRecoveryEnabled = false,
                     NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
                 };
 
