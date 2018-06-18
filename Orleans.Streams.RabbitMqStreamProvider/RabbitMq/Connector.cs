@@ -118,8 +118,10 @@ namespace Orleans.Streams.RabbitMq
         public RabbitMqConnector(RabbitMqStreamProviderOptions options, QueueId queueId, Logger logger)
         {
             _options = options;
-            QueueName = queueId.ToString();
             Logger = logger;
+            QueueName = options.UseQueuePartitioning
+                ? $"{options.QueueNamePrefix}-{queueId.GetNumericId()}"
+                : options.QueueNamePrefix;
         }
 
         private void EnsureConnection()

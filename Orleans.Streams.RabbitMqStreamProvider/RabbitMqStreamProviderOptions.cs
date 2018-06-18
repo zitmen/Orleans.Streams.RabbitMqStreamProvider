@@ -12,6 +12,7 @@ namespace Orleans.Streams
         public readonly string Password;
         public readonly int CacheSize;
         public readonly TimeSpan CacheFillingTimeout;
+        public readonly bool UseQueuePartitioning;
         public readonly int NumberOfQueues;
         public readonly string QueueNamePrefix;
         
@@ -30,8 +31,11 @@ namespace Orleans.Streams
             Password = config.GetProperty(nameof(Password), string.Empty);
             CacheSize = config.GetIntProperty(nameof(CacheSize), DefaultCacheSize);
             CacheFillingTimeout = config.GetTimeSpanProperty(nameof(CacheFillingTimeout), DefaultCacheFillingTimeout);
+            UseQueuePartitioning = config.GetBoolProperty(nameof(UseQueuePartitioning), DefaultUseQueuePartitioning);
             QueueNamePrefix = config.GetProperty(nameof(QueueNamePrefix), string.Empty);
-            NumberOfQueues = config.GetIntProperty(nameof(NumberOfQueues), DefaultNumberOfQueues);
+            NumberOfQueues = UseQueuePartitioning
+                ? config.GetIntProperty(nameof(NumberOfQueues), DefaultNumberOfQueues)
+                : 1;
         }
 
         private const string DefaultHostName = "localhost";
@@ -39,6 +43,7 @@ namespace Orleans.Streams
         private const int DefaultPort = 5672;
         private const int DefaultCacheSize = 4000;
         private static readonly TimeSpan DefaultCacheFillingTimeout = TimeSpan.FromSeconds(10);
+        private const bool DefaultUseQueuePartitioning = false;
         private const int DefaultNumberOfQueues = 1;
     }
 }
