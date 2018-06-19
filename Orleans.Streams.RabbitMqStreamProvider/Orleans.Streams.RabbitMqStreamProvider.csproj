@@ -128,13 +128,16 @@
   <ItemGroup>
     <Compile Include="Cache\ConcurrentQueueAdapterCache.cs" />
     <Compile Include="Cache\ConcurrentQueueCacheCursor.cs" />
+    <Compile Include="BatchContainer\DefaultBatchContainerSerializer.cs" />
+    <Compile Include="BatchContainer\IBatchContainerSerializer.cs" />
+    <Compile Include="RabbitMqStreamProviderIntegration.cs" />
     <Compile Include="RabbitMq\ConnectorFactory.cs" />
     <Compile Include="RabbitMq\Interfaces.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitMqAdapter.cs" />
     <Compile Include="RabbitMqAdapterFactory.cs" />
     <Compile Include="RabbitMqAdapterReceiver.cs" />
-    <Compile Include="RabbitMqBatchContainer.cs" />
+    <Compile Include="BatchContainer\RabbitMqBatchContainer.cs" />
     <Compile Include="RabbitMqDataAdapter.cs" />
     <Compile Include="RabbitMqStreamProvider.cs" />
     <Compile Include="RabbitMqStreamProviderOptions.cs" />

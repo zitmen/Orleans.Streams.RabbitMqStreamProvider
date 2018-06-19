@@ -1,4 +1,5 @@
 ﻿using System;
+using Orleans.Streams.BatchContainer;
 
 namespace Orleans.Streams.Cache
 {

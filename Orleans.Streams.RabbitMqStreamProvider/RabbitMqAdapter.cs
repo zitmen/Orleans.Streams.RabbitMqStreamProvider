@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans.Runtime;
-using Orleans.Serialization;
+using Orleans.Streams.BatchContainer;
 using Orleans.Streams.RabbitMq;
 
 namespace Orleans.Streams
@@ -19,15 +19,15 @@ namespace Orleans.Streams
     /// </summary>
     internal class RabbitMqAdapter : IQueueAdapter
     {
-        private readonly SerializationManager _serializationManager;
+        private readonly IBatchContainerSerializer _serializer;
         private readonly IStreamQueueMapper _mapper;
         private readonly ConcurrentDictionary<Tuple<int, QueueId>, IRabbitMqProducer> _queues = new ConcurrentDictionary<Tuple<int, QueueId>, IRabbitMqProducer>();
         private readonly IRabbitMqConnectorFactory _rmqConnectorFactory;
         private readonly TimeSpan _cacheFillingTimeout;
 
-        public RabbitMqAdapter(RabbitMqStreamProviderOptions options, SerializationManager serializationManager, IStreamQueueMapper mapper, string providerName, Logger logger)
+        public RabbitMqAdapter(RabbitMqStreamProviderOptions options, IBatchContainerSerializer serializer, IStreamQueueMapper mapper, string providerName, Logger logger)
         {
-            _serializationManager = serializationManager;
+            _serializer = serializer;
             _mapper = mapper;
             Name = providerName;
             _rmqConnectorFactory = new RabbitMqOnlineConnectorFactory(options, logger);
@@ -37,7 +37,7 @@ namespace Orleans.Streams
         public string Name { get; }
         public bool IsRewindable => false;
         public StreamProviderDirection Direction => StreamProviderDirection.ReadWrite;
-        public IQueueAdapterReceiver CreateReceiver(QueueId queueId) => new RabbitMqAdapterReceiver(_rmqConnectorFactory, queueId, _serializationManager, _cacheFillingTimeout);
+        public IQueueAdapterReceiver CreateReceiver(QueueId queueId) => new RabbitMqAdapterReceiver(_rmqConnectorFactory, queueId, _serializer, _cacheFillingTimeout);
 
         public Task QueueMessageBatchAsync<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
         {
@@ -49,7 +49,7 @@ namespace Orleans.Streams
             {
                 rmq = _queues.GetOrAdd(key, _rmqConnectorFactory.CreateProducer(queueId));
             }
-            rmq.Send(RabbitMqDataAdapter.ToQueueMessage(_serializationManager, streamGuid, streamNamespace, events, requestContext));
+            rmq.Send(RabbitMqDataAdapter.ToQueueMessage(_serializer, streamGuid, streamNamespace, events, requestContext));
             return Task.CompletedTask;
         }
     }

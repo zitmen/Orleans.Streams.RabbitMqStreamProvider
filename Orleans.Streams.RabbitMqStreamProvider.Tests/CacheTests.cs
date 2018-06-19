@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Orleans.Providers.Streams.Common;
 using Orleans.Streams;
+using Orleans.Streams.BatchContainer;
 using Orleans.Streams.Cache;
 
 namespace RabbitMqStreamTests

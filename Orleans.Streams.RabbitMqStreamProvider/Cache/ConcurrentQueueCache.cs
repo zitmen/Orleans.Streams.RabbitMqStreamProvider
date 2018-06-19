@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using Orleans.Streams.BatchContainer;
 
 namespace Orleans.Streams.Cache
 {

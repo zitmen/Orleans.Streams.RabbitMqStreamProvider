@@ -4,11 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Orleans.Providers;
 using Orleans.Runtime;
 using Orleans.Serialization;
+using Orleans.Streams.BatchContainer;
 using Orleans.Streams.Cache;
 
 namespace Orleans.Streams
 {
-    public class RabbitMqAdapterFactory : IQueueAdapterFactory
+    public class RabbitMqAdapterFactory<TSerializer> : IQueueAdapterFactory where TSerializer : IBatchContainerSerializer, new()
     {
         private string _providerName;
         private IQueueAdapterCache _cache;
@@ -28,7 +29,12 @@ namespace Orleans.Streams
             _cache = new ConcurrentQueueAdapterCache(_options.CacheSize);
             _mapper = new HashRingBasedStreamQueueMapper(_options.NumberOfQueues, _options.QueueNamePrefix);
             _failureHandler = Task.FromResult<IStreamFailureHandler>(new NoOpStreamDeliveryFailureHandler(false));
-            _adapter = new RabbitMqAdapter(_options, serviceProvider.GetRequiredService<SerializationManager>(), _mapper, _providerName, logger);
+
+            var serializer = typeof(TSerializer) == typeof(DefaultBatchContainerSerializer)
+                ? new DefaultBatchContainerSerializer(serviceProvider.GetRequiredService<SerializationManager>())
+                : (IBatchContainerSerializer) new TSerializer();
+
+            _adapter = new RabbitMqAdapter(_options, serializer, _mapper, _providerName, logger);
         }
 
         public Task<IQueueAdapter> CreateAdapter() => Task.FromResult(_adapter);

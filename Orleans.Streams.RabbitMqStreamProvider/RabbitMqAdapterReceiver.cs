@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Orleans.Serialization;
+using Orleans.Streams.BatchContainer;
 using Orleans.Streams.RabbitMq;
 
 namespace Orleans.Streams
@@ -10,16 +10,16 @@ namespace Orleans.Streams
     {
         private readonly IRabbitMqConnectorFactory _rmqConnectorFactory;
         private readonly QueueId _queueId;
-        private readonly SerializationManager _serializationManager;
+        private readonly IBatchContainerSerializer _serializer;
         private readonly TimeSpan _cacheFillingTimeout;
         private long _sequenceId;
         private IRabbitMqConsumer _consumer;
 
-        public RabbitMqAdapterReceiver(IRabbitMqConnectorFactory rmqConnectorFactory, QueueId queueId, SerializationManager serializationManager, TimeSpan cacheFillingTimeout)
+        public RabbitMqAdapterReceiver(IRabbitMqConnectorFactory rmqConnectorFactory, QueueId queueId, IBatchContainerSerializer serializer, TimeSpan cacheFillingTimeout)
         {
             _rmqConnectorFactory = rmqConnectorFactory;
             _queueId = queueId;
-            _serializationManager = serializationManager;
+            _serializer = serializer;
             _cacheFillingTimeout = cacheFillingTimeout;
             _sequenceId = 0;
         }
@@ -52,7 +52,7 @@ namespace Orleans.Streams
                 if (item == null) break;
                 try
                 {
-                    batch.Add(RabbitMqDataAdapter.FromQueueMessage(_serializationManager, item.Body, _sequenceId++, item.DeliveryTag));
+                    batch.Add(RabbitMqDataAdapter.FromQueueMessage(_serializer, item.Body, _sequenceId++, item.DeliveryTag));
                 }
                 catch (Exception ex)
                 {

@@ -50,6 +50,7 @@ namespace RabbitMqStreamTests
                     { "UserName", "guest" },
                     { "Password", "guest" },
                     { "GetQueueMessagesTimerPeriod", "100ms" },
+                    { "UseQueuePartitioning", "false" },
                     { "QueueNamePrefix", "test" },
                     { "NumberOfQueues", "1" },
                     { "CacheSize", "100" },

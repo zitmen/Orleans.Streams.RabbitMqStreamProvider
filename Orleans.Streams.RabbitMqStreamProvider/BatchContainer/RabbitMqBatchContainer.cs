@@ -4,7 +4,7 @@ using System.Linq;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
 
-namespace Orleans.Streams
+namespace Orleans.Streams.BatchContainer
 {
     [Serializable]
     public class RabbitMqBatchContainer : IBatchContainer
@@ -27,12 +27,6 @@ namespace Orleans.Streams
             _requestContext = requestContext;
         }
 
-        public IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
-        {
-            var res = _events.OfType<T>().Select((e, i) => Tuple.Create<T, StreamSequenceToken>(e, EventSequenceToken.CreateSequenceTokenForEvent(i))).ToList();
-            return res;
-        }
-
         public bool ImportRequestContext()
         {
             if (_requestContext == null) return false;
@@ -40,10 +34,13 @@ namespace Orleans.Streams
             return true;
         }
 
+        public IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
+            => _events
+                .OfType<T>()
+                .Select((e, i) => Tuple.Create<T, StreamSequenceToken>(e, EventSequenceToken.CreateSequenceTokenForEvent(i)))
+                .ToList();
+
         public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
-        {
-            var res = _events.Any(item => shouldReceiveFunc(stream, filterData, item));
-            return res;
-        }
+            => _events.Any(item => shouldReceiveFunc(stream, filterData, item));
     }
 }
