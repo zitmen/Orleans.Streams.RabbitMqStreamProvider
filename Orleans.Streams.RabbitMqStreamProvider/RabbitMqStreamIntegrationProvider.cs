@@ -3,7 +3,7 @@ using Orleans.Streams.BatchContainer;
 
 namespace Orleans.Streams
 {
-    public class RabbitMqStreamIntegrationProvider<TSerializer> : PersistentStreamProvider<RabbitMqAdapterFactory<TSerializer>> where TSerializer : IBatchContainerSerializer, new()
+    public abstract class RabbitMqStreamIntegrationProvider<TSerializer> : PersistentStreamProvider<RabbitMqAdapterFactory<TSerializer>> where TSerializer : IBatchContainerSerializer, new()
     {
     }
 }
