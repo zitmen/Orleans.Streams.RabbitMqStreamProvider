@@ -130,7 +130,7 @@
     <Compile Include="Cache\ConcurrentQueueCacheCursor.cs" />
     <Compile Include="BatchContainer\DefaultBatchContainerSerializer.cs" />
     <Compile Include="BatchContainer\IBatchContainerSerializer.cs" />
-    <Compile Include="RabbitMqStreamProviderIntegration.cs" />
+    <Compile Include="RabbitMqStreamIntegrationProvider.cs" />
     <Compile Include="RabbitMq\ConnectorFactory.cs" />
     <Compile Include="RabbitMq\Interfaces.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
