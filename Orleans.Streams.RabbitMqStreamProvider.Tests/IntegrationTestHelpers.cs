@@ -42,7 +42,7 @@ namespace RabbitMqStreamTests
                 }
 
                 Assert.IsTrue(await AllMessagesSentAndDelivered(aggregator, messages));
-                Assert.AreEqual(2, await aggregator.GetProcessingSilosCount());
+                Assert.AreEqual(cluster.Silos.Count, await aggregator.GetProcessingSilosCount());
             }
         }
 
@@ -69,7 +69,7 @@ namespace RabbitMqStreamTests
                 }
 
                 Assert.IsTrue(await AllMessagesSentAndDelivered(aggregator, messages));
-                Assert.AreEqual(2, await aggregator.GetProcessingSilosCount());
+                Assert.AreEqual(cluster.Silos.Count, await aggregator.GetProcessingSilosCount());
             }
         }
 

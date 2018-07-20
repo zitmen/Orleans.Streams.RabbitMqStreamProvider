@@ -18,7 +18,7 @@ install:
 - start /B /WAIT %rabbitmq_installer_path% /S
 - ps: (Get-Service -Name RabbitMQ).Status
 
-version: 1.5.2.{build}
+version: 2.0.0.{build}
 assembly_info:
   patch: true
   file: AssemblyInfo.cs

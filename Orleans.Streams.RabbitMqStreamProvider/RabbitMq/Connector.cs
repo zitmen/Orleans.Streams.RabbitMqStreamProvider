@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
-using Orleans.Runtime;
+using Microsoft.Extensions.Logging;
+using Orleans.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -24,13 +25,13 @@ namespace Orleans.Streams.RabbitMq
         {
             try
             {
-                _connection.Logger.Verbose(0, $"RabbitMqConsumer: calling Ack on thread {Thread.CurrentThread.Name}.");
+                _connection.Logger.LogDebug($"RabbitMqConsumer: calling Ack on thread {Thread.CurrentThread.Name}.");
 
                 _connection.Channel.BasicAck(deliveryTag, false);
             }
             catch (Exception ex)
             {
-                _connection.Logger.Error(0, "RabbitMqConsumer: failed to call ACK!", ex);
+                _connection.Logger.LogError(ex, "RabbitMqConsumer: failed to call ACK!");
             }
         }
 
@@ -38,13 +39,13 @@ namespace Orleans.Streams.RabbitMq
         {
             try
             {
-                _connection.Logger.Verbose(0, $"RabbitMqConsumer: calling Nack on thread {Thread.CurrentThread.Name}.");
+                _connection.Logger.LogDebug($"RabbitMqConsumer: calling Nack on thread {Thread.CurrentThread.Name}.");
 
                 _connection.Channel.BasicNack(deliveryTag, false, true);
             }
             catch (Exception ex)
             {
-                _connection.Logger.Error(0, "RabbitMqConsumer: failed to call NACK!", ex);
+                _connection.Logger.LogError(ex, "RabbitMqConsumer: failed to call NACK!");
             }
         }
 
@@ -56,7 +57,7 @@ namespace Orleans.Streams.RabbitMq
             }
             catch (Exception ex)
             {
-                _connection.Logger.Error(0, "RabbitMqConsumer: failed to call Get!", ex);
+                _connection.Logger.LogError(ex, "RabbitMqConsumer: failed to call Get!");
                 return null;
             }
         }
@@ -80,7 +81,7 @@ namespace Orleans.Streams.RabbitMq
         {
             try
             {
-                _connection.Logger.Verbose(0, $"RabbitMqProducer: calling Send on thread {Thread.CurrentThread.Name}.");
+                _connection.Logger.LogDebug($"RabbitMqProducer: calling Send on thread {Thread.CurrentThread.Name}.");
 
                 var basicProperties = _connection.Channel.CreateBasicProperties();
                 basicProperties.MessageId = Guid.NewGuid().ToString();
@@ -100,9 +101,9 @@ namespace Orleans.Streams.RabbitMq
     internal class RabbitMqConnector : IDisposable
     {
         public readonly string QueueName;
-        public readonly Logger Logger;
+        public readonly ILogger Logger;
 
-        private readonly RabbitMqStreamProviderOptions _options;
+        private readonly RabbitMqOptions _options;
         private IConnection _connection;
         private IModel _channel;
 
@@ -115,7 +116,7 @@ namespace Orleans.Streams.RabbitMq
             }
         }
 
-        public RabbitMqConnector(RabbitMqStreamProviderOptions options, QueueId queueId, Logger logger)
+        public RabbitMqConnector(RabbitMqOptions options, QueueId queueId, ILogger logger)
         {
             _options = options;
             Logger = logger;
@@ -128,7 +129,7 @@ namespace Orleans.Streams.RabbitMq
         {
             if (_connection?.IsOpen != true)
             {
-                Logger.Verbose("Opening a new RMQ connection...");
+                Logger.LogDebug("Opening a new RMQ connection...");
                 var factory = new ConnectionFactory
                 {
                     HostName = _options.HostName,
@@ -142,7 +143,7 @@ namespace Orleans.Streams.RabbitMq
                 };
 
                 _connection = factory.CreateConnection();
-                Logger.Verbose("Connection created.");
+                Logger.LogDebug("Connection created.");
                 _connection.ConnectionShutdown += OnConnectionShutdown;
                 _connection.ConnectionBlocked += OnConnectionBlocked;
                 _connection.ConnectionUnblocked += OnConnectionUnblocked;
@@ -150,11 +151,11 @@ namespace Orleans.Streams.RabbitMq
 
             if (_channel?.IsOpen != true)
             {
-                Logger.Verbose("Creating a model.");
+                Logger.LogDebug("Creating a model.");
                 _channel = _connection.CreateModel();
                 _channel.QueueDeclare(QueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
                 _channel.ConfirmSelect();   // manual (N)ACK
-                Logger.Verbose("Model created.");
+                Logger.LogDebug("Model created.");
             }
         }
 
@@ -170,23 +171,23 @@ namespace Orleans.Streams.RabbitMq
             }
             catch (Exception ex)
             {
-                Logger.Error(0, "Error during RMQ connection disposal.", ex);
+                Logger.LogError(ex, "Error during RMQ connection disposal.");
             }
         }
 
         private void OnConnectionShutdown(object connection, ShutdownEventArgs reason)
         {
-            Logger.Warn(0, $"Connection was shut down: [{reason.ReplyText}]");
+            Logger.LogWarning($"Connection was shut down: [{reason.ReplyText}]");
         }
 
         private void OnConnectionBlocked(object connection, ConnectionBlockedEventArgs reason)
         {
-            Logger.Warn(0, $"Connection is blocked: [{reason.Reason}]");
+            Logger.LogWarning($"Connection is blocked: [{reason.Reason}]");
         }
 
         private void OnConnectionUnblocked(object connection, EventArgs args)
         {
-            Logger.Warn(0, "Connection is not blocked any more.");
+            Logger.LogWarning("Connection is not blocked any more.");
         }
     }
 }

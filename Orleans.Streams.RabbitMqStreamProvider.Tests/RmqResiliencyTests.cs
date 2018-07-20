@@ -153,7 +153,7 @@ namespace RabbitMqStreamTests
             _proxyProcess = StartProxy();
 
             // Orleans cluster
-            _cluster = CreateClusterOptions().CreateTestCluster();
+            _cluster = CreateTestCluster(RmqSerializer.Default);
         }
 
         [ClassCleanup]

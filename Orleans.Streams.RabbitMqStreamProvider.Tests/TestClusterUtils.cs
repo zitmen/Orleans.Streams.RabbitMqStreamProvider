@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Orleans.Hosting;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
-using Orleans.Storage;
 using Orleans.Streams;
+using Orleans.Streams.BatchContainer;
 using Orleans.TestingHost;
 
 namespace RabbitMqStreamTests
@@ -18,7 +19,7 @@ namespace RabbitMqStreamTests
                 .GrainFactory
                 .GetGrain<IManagementGrain>(0)
                 .SendControlCommandToProvider(
-                    "Orleans.Streams.RabbitMqStreamProvider",
+                    typeof(PersistentStreamProvider).FullName,
                     Globals.StreamProviderName,
                     (int)PersistentStreamProviderCommand.StartAgents);
         }
@@ -30,39 +31,26 @@ namespace RabbitMqStreamTests
                 .GrainFactory
                 .GetGrain<IManagementGrain>(0)
                 .SendControlCommandToProvider(
-                    "Orleans.Streams.RabbitMqStreamProvider",
+                    typeof(PersistentStreamProvider).FullName,
                     Globals.StreamProviderName,
                     (int)PersistentStreamProviderCommand.StopAgents);
         }
 
-        public static TestClusterOptions CreateClusterOptions()
+        public static TestCluster CreateTestCluster(RmqSerializer serializer)
         {
-            var options = new TestClusterOptions(2);
+            var builder = new TestClusterBuilder(initialSilosCount: 1);
+            switch (serializer)
+            {
+                case RmqSerializer.ProtoBuf:
+                    builder.AddSiloBuilderConfigurator<SiloTestClusterRmqCustomSerializerConfigurator<ProtoBufBatchContainerSerializer>>();
+                    break;
 
-            options.ClusterConfiguration.Globals.UseLivenessGossip = false;
-            options.ClusterConfiguration.Globals.RegisterStorageProvider<MemoryStorage>("PubSubStore");
-            options.ClusterConfiguration.Globals.RegisterStreamProvider<RabbitMqStreamProvider>(Globals.StreamProviderName,
-                new Dictionary<string, string>
-                {
-                    { "HostName", "localhost" },
-                    { "Port", ToxiProxyHelpers.RmqProxyPort.ToString() },
-                    { "VirtualHost", "/" },
-                    { "UserName", "guest" },
-                    { "Password", "guest" },
-                    { "GetQueueMessagesTimerPeriod", "100ms" },
-                    { "UseQueuePartitioning", "false" },
-                    { "QueueNamePrefix", "test" },
-                    { "NumberOfQueues", "1" },
-                    { "CacheSize", "100" },
-                    { PersistentStreamProviderConfig.STREAM_PUBSUB_TYPE, StreamPubSubType.ImplicitOnly.ToString() }
-                });
+                default:
+                    builder.AddSiloBuilderConfigurator<SiloTestClusterRmqConfigurator>();
+                    break;
+            }
 
-            return options;
-        }
-
-        public static TestCluster CreateTestCluster(this TestClusterOptions options)
-        {
-            var cluster = new TestCluster(options);
+            var cluster = builder.Build();
             cluster.Deploy();
             cluster.WaitForLivenessToStabilizeAsync().Wait();
             return cluster;
@@ -80,7 +68,7 @@ namespace RabbitMqStreamTests
              *  - to solve the issue, there are two options
              *    (1) in case of only implicit subscription, use { "PubSubType", "ImplicitOnly" } in the stream provider settings
              *      - the explanation is that it is not a grain based model so no communication is required
-             *    (2) in general case, step the stream provider prior to stopping the silo using the commented code snipped below
+             *    (2) in general case, stop the stream provider prior to stopping the silo using the commented code snipped below
              *  - the following piece of code can be used to control provider of any kind; here we stop a stream provider
              */
 
@@ -100,6 +88,58 @@ namespace RabbitMqStreamTests
             catch (CannotUnloadAppDomainException)
             {
                 // this might happen when unloading the silo
+            }
+        }
+
+        public enum RmqSerializer
+        {
+            Default,
+            ProtoBuf
+        }
+
+        private class SiloTestClusterRmqConfigurator : ISiloBuilderConfigurator
+        {
+            public void Configure(ISiloHostBuilder builder)
+            {
+                builder.AddMemoryGrainStorage("PubSubStore");
+
+                builder.AddRabbitMqStream(Globals.StreamProviderName, configurator =>
+                {
+                    configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
+                        virtualHost: "/", user: "guest", password: "guest", queueName: "test");
+                    configurator.ConfigureCache(cacheSize: 100, cacheFillingTimeout: TimeSpan.FromSeconds(10));
+                    configurator.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
+                    configurator.ConfigurePullingAgent(ob => ob.Configure(
+                        options =>
+                        {
+                            options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(100);
+                        }));
+                });
+
+                builder.ConfigureLogging(log => log.AddConsole());
+            }
+        }
+
+        private class SiloTestClusterRmqCustomSerializerConfigurator<TSerializer> : ISiloBuilderConfigurator where TSerializer : IBatchContainerSerializer, new()
+        {
+            public void Configure(ISiloHostBuilder builder)
+            {
+                builder.AddMemoryGrainStorage("PubSubStore");
+
+                builder.AddRabbitMqStream<TSerializer>(Globals.StreamProviderName, configurator =>
+                {
+                    configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
+                        virtualHost: "/", user: "guest", password: "guest", queueName: "test");
+                    configurator.ConfigureCache(cacheSize: 100, cacheFillingTimeout: TimeSpan.FromSeconds(10));
+                    configurator.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
+                    configurator.ConfigurePullingAgent(ob => ob.Configure(
+                        options =>
+                        {
+                            options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(100);
+                        }));
+                });
+
+                builder.ConfigureLogging(log => log.AddConsole());
             }
         }
     }

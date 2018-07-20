@@ -1,14 +1,27 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 
 namespace RabbitMqStreamTests
 {
     [Serializable]
+    [ProtoContract]
     public class Message
     {
+        [ProtoMember(1)]
         public readonly int Id;
+
+        [ProtoMember(2)]
         public readonly double WorkTimeOutMillis;
+
+        [ProtoMember(3)]
         public readonly bool Delivered;
+
+        [ProtoMember(4)]
         public readonly string ProcessedBy;
+
+        public Message()
+        {
+        }
 
         public Message(int id, double timeoutMillis)
         {

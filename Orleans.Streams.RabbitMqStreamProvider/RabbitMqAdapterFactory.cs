@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Orleans.Providers;
-using Orleans.Runtime;
+using Microsoft.Extensions.Logging;
+using Orleans.Configuration;
 using Orleans.Serialization;
 using Orleans.Streams.BatchContainer;
 using Orleans.Streams.Cache;
@@ -11,35 +11,45 @@ namespace Orleans.Streams
 {
     public class RabbitMqAdapterFactory<TSerializer> : IQueueAdapterFactory where TSerializer : IBatchContainerSerializer, new()
     {
-        private string _providerName;
-        private IQueueAdapterCache _cache;
-        private IStreamQueueMapper _mapper;
-        private Task<IStreamFailureHandler> _failureHandler;
-        private IQueueAdapter _adapter;
-        private RabbitMqStreamProviderOptions _options;
-
-        public void Init(IProviderConfiguration config, string providerName, Logger logger, IServiceProvider serviceProvider)
+        private readonly IQueueAdapterCache _cache;
+        private readonly IStreamQueueMapper _mapper;
+        private readonly Task<IStreamFailureHandler> _failureHandler;
+        private readonly IQueueAdapter _adapter;
+        
+        public RabbitMqAdapterFactory(
+            string providerName,
+            RabbitMqOptions rmqOptions,
+            CachingOptions cachingOptions,
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory)
         {
-            if (config == null) throw new ArgumentNullException(nameof(config));
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (string.IsNullOrEmpty(providerName)) throw new ArgumentNullException(nameof(providerName));
+            if (rmqOptions == null) throw new ArgumentNullException(nameof(rmqOptions));
+            if (cachingOptions == null) throw new ArgumentNullException(nameof(cachingOptions));
+            if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
+            if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
 
-            _options = new RabbitMqStreamProviderOptions(config);
-            _providerName = providerName;
-            _cache = new ConcurrentQueueAdapterCache(_options.CacheSize);
-            _mapper = new HashRingBasedStreamQueueMapper(_options.NumberOfQueues, _options.QueueNamePrefix);
+            _cache = new ConcurrentQueueAdapterCache(cachingOptions.CacheSize);
+            _mapper = new HashRingBasedStreamQueueMapper(new HashRingStreamQueueMapperOptions { TotalQueueCount = rmqOptions.NumberOfQueues }, rmqOptions.QueueNamePrefix);
             _failureHandler = Task.FromResult<IStreamFailureHandler>(new NoOpStreamDeliveryFailureHandler(false));
 
             var serializer = typeof(TSerializer) == typeof(DefaultBatchContainerSerializer)
                 ? new DefaultBatchContainerSerializer(serviceProvider.GetRequiredService<SerializationManager>())
-                : (IBatchContainerSerializer) new TSerializer();
+                : (IBatchContainerSerializer)new TSerializer();
 
-            _adapter = new RabbitMqAdapter(_options, serializer, _mapper, _providerName, logger);
+            _adapter = new RabbitMqAdapter(rmqOptions, cachingOptions, serializer, _mapper, providerName, loggerFactory);
         }
 
         public Task<IQueueAdapter> CreateAdapter() => Task.FromResult(_adapter);
         public Task<IStreamFailureHandler> GetDeliveryFailureHandler(QueueId queueId) => _failureHandler;
         public IQueueAdapterCache GetQueueAdapterCache() => _cache;
         public IStreamQueueMapper GetStreamQueueMapper() => _mapper;
+
+        public static RabbitMqAdapterFactory<TSerializer> Create(IServiceProvider services, string name)
+            => ActivatorUtilities.CreateInstance<RabbitMqAdapterFactory<TSerializer>>(
+                services,
+                name,
+                services.GetOptionsByName<RabbitMqOptions>(name),
+                services.GetOptionsByName<CachingOptions>(name));
     }
 }

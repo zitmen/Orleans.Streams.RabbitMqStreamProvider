@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Orleans;
 using Orleans.Concurrency;
 
@@ -19,12 +21,14 @@ namespace RabbitMqStreamTests
 
     public class AggregatorGrain : Grain, IAggregatorGrain
     {
+        private ILogger _logger;
         private Dictionary<int, Message> _sentMessages;
         private Dictionary<int, Message> _receivedMessages;
 
         public override async Task OnActivateAsync()
         {
             await base.OnActivateAsync();
+            _logger = ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger($"{typeof(AggregatorGrain).FullName}.{this.GetPrimaryKey()}");
             _sentMessages = new Dictionary<int, Message>();
             _receivedMessages = new Dictionary<int, Message>();
         }
@@ -38,14 +42,14 @@ namespace RabbitMqStreamTests
 
         public Task MessageSent(Immutable<Message> message)
         {
-            GetLogger().Log(0, Orleans.Runtime.Severity.Info, $"MessageSent #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}", null, null);
+            _logger.LogInformation($"MessageSent #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}");
             _sentMessages.Add(message.Value.Id, message.Value);
             return Task.CompletedTask;
         }
 
         public Task MessageReceived(Immutable<Message> message)
         {
-            GetLogger().Log(0, Orleans.Runtime.Severity.Info, $"MessageReceived #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}", null, null);
+            _logger.LogInformation($"MessageReceived #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}");
             _receivedMessages.Add(message.Value.Id, message.Value);
             return Task.CompletedTask;
         }

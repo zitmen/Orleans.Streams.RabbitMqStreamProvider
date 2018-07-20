@@ -3,7 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Orleans.Runtime;
+using Microsoft.Extensions.Logging;
+using Orleans.Configuration;
 using Orleans.Streams.BatchContainer;
 using Orleans.Streams.RabbitMq;
 
@@ -25,13 +26,13 @@ namespace Orleans.Streams
         private readonly IRabbitMqConnectorFactory _rmqConnectorFactory;
         private readonly TimeSpan _cacheFillingTimeout;
 
-        public RabbitMqAdapter(RabbitMqStreamProviderOptions options, IBatchContainerSerializer serializer, IStreamQueueMapper mapper, string providerName, Logger logger)
+        public RabbitMqAdapter(RabbitMqOptions rmqOptions, CachingOptions cachingOptions, IBatchContainerSerializer serializer, IStreamQueueMapper mapper, string providerName, ILoggerFactory loggerFactory)
         {
             _serializer = serializer;
             _mapper = mapper;
             Name = providerName;
-            _rmqConnectorFactory = new RabbitMqOnlineConnectorFactory(options, logger);
-            _cacheFillingTimeout = options.CacheFillingTimeout;
+            _rmqConnectorFactory = new RabbitMqOnlineConnectorFactory(rmqOptions, loggerFactory);
+            _cacheFillingTimeout = cachingOptions.CacheFillingTimeout;
         }
 
         public string Name { get; }

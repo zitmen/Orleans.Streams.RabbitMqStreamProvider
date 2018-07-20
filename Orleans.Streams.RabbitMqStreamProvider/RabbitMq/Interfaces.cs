@@ -1,12 +1,12 @@
 ﻿using System;
-using Orleans.Runtime;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
 namespace Orleans.Streams.RabbitMq
 {
     internal interface IRabbitMqConnectorFactory
     {
-        Logger Logger { get; }
+        ILoggerFactory LoggerFactory { get; }
         IRabbitMqConsumer CreateConsumer(QueueId queueId);
         IRabbitMqProducer CreateProducer(QueueId queueId);
     }

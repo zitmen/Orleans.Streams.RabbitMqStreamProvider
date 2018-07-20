@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Streams.RabbitMqStreamProvider", "Orleans.Streams.RabbitMqStreamProvider\Orleans.Streams.RabbitMqStreamProvider.csproj", "{3C698A71-6CB9-458E-BFA8-E94735733A4E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Streams.RabbitMqStreamProvider.Tests", "Orleans.Streams.RabbitMqStreamProvider.Tests\Orleans.Streams.RabbitMqStreamProvider.Tests.csproj", "{BEE3BDC1-33A5-4C5E-A7F3-A0FA050D99F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Streams.RabbitMqStreamProvider", "Orleans.Streams.RabbitMqStreamProvider\Orleans.Streams.RabbitMqStreamProvider.csproj", "{7B0EE715-AC3A-426E-A0A5-317AFDEAA251}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,16 +13,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3C698A71-6CB9-458E-BFA8-E94735733A4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3C698A71-6CB9-458E-BFA8-E94735733A4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C698A71-6CB9-458E-BFA8-E94735733A4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3C698A71-6CB9-458E-BFA8-E94735733A4E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BEE3BDC1-33A5-4C5E-A7F3-A0FA050D99F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BEE3BDC1-33A5-4C5E-A7F3-A0FA050D99F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEE3BDC1-33A5-4C5E-A7F3-A0FA050D99F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEE3BDC1-33A5-4C5E-A7F3-A0FA050D99F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B0EE715-AC3A-426E-A0A5-317AFDEAA251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B0EE715-AC3A-426E-A0A5-317AFDEAA251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B0EE715-AC3A-426E-A0A5-317AFDEAA251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B0EE715-AC3A-426E-A0A5-317AFDEAA251}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9267CCC4-B5A1-45D4-8440-1B212A165B29}
 	EndGlobalSection
 EndGlobal

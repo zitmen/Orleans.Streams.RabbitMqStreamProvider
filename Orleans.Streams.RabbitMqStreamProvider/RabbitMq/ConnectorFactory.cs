@@ -1,23 +1,24 @@
-﻿using Orleans.Runtime;
+﻿using Microsoft.Extensions.Logging;
+using Orleans.Configuration;
 
 namespace Orleans.Streams.RabbitMq
 {
     internal class RabbitMqOnlineConnectorFactory : IRabbitMqConnectorFactory
     {
-        private readonly RabbitMqStreamProviderOptions _options;
+        private readonly RabbitMqOptions _options;
         
-        public RabbitMqOnlineConnectorFactory(RabbitMqStreamProviderOptions options, Logger logger)
+        public RabbitMqOnlineConnectorFactory(RabbitMqOptions options, ILoggerFactory loggerFactory)
         {
             _options = options;
-            Logger = logger;
+            LoggerFactory = loggerFactory;
         }
 
-        public Logger Logger { get; }
+        public ILoggerFactory LoggerFactory { get; }
 
         public IRabbitMqConsumer CreateConsumer(QueueId queueId)
-            => new RabbitMqConsumer(new RabbitMqConnector(_options, queueId, Logger));
+            => new RabbitMqConsumer(new RabbitMqConnector(_options, queueId, LoggerFactory.CreateLogger($"{typeof(RabbitMqConsumer).FullName}.{queueId}")));
 
         public IRabbitMqProducer CreateProducer(QueueId queueId)
-            => new RabbitMqProducer(new RabbitMqConnector(_options, queueId, Logger));
+            => new RabbitMqProducer(new RabbitMqConnector(_options, queueId, LoggerFactory.CreateLogger($"{typeof(RabbitMqProducer).FullName}.{queueId}")));
     }
 }

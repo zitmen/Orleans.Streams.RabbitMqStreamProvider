@@ -30,14 +30,14 @@ namespace Orleans.Streams.BatchContainer
         public bool ImportRequestContext()
         {
             if (_requestContext == null) return false;
-            RequestContext.Import(_requestContext);
+            RequestContextExtensions.Import(_requestContext);
             return true;
         }
 
         public IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
-            => _events
+        => _events
                 .OfType<T>()
-                .Select((e, i) => Tuple.Create<T, StreamSequenceToken>(e, EventSequenceToken.CreateSequenceTokenForEvent(i)))
+                .Select((e, i) => Tuple.Create<T, StreamSequenceToken>(e, EventSequenceToken?.CreateSequenceTokenForEvent(i)))
                 .ToList();
 
         public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)

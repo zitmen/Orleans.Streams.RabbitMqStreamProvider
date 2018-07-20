@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Orleans.Streams.BatchContainer;
 using Orleans.Streams.RabbitMq;
 
@@ -12,6 +13,7 @@ namespace Orleans.Streams
         private readonly QueueId _queueId;
         private readonly IBatchContainerSerializer _serializer;
         private readonly TimeSpan _cacheFillingTimeout;
+        private readonly ILogger _logger;
         private long _sequenceId;
         private IRabbitMqConsumer _consumer;
 
@@ -21,6 +23,7 @@ namespace Orleans.Streams
             _queueId = queueId;
             _serializer = serializer;
             _cacheFillingTimeout = cacheFillingTimeout;
+            _logger = _rmqConnectorFactory.LoggerFactory.CreateLogger($"{typeof(RabbitMqAdapterReceiver).FullName}.{queueId}");
             _sequenceId = 0;
         }
 
@@ -56,7 +59,7 @@ namespace Orleans.Streams
                 }
                 catch (Exception ex)
                 {
-                    _rmqConnectorFactory.Logger.Log(0, Runtime.Severity.Error, "GetQueueMessagesAsync: failed to deserialize the message! The message will be thrown away (by calling ACK).", null, ex);
+                    _logger.LogError(ex, "GetQueueMessagesAsync: failed to deserialize the message! The message will be thrown away (by calling ACK).");
                     _consumer.Ack(item.DeliveryTag);
                 }
             }
@@ -71,12 +74,12 @@ namespace Orleans.Streams
                 var tag = ((RabbitMqBatchContainer) msg).DeliveryTag;
                 if (failed)
                 {
-                    _rmqConnectorFactory.Logger.Log(0, Runtime.Severity.Verbose, $"MessagesDeliveredAsync NACK #{tag} {msg.SequenceToken}", null, null);
+                    _logger.LogDebug($"MessagesDeliveredAsync NACK #{tag} {msg.SequenceToken}");
                     _consumer.Nack(tag);
                 }
                 else
                 {
-                    _rmqConnectorFactory.Logger.Log(0, Runtime.Severity.Verbose, $"MessagesDeliveredAsync ACK #{tag} {msg.SequenceToken}", null, null);
+                    _logger.LogDebug($"MessagesDeliveredAsync ACK #{tag} {msg.SequenceToken}");
                     _consumer.Ack(tag);
                 }
             }

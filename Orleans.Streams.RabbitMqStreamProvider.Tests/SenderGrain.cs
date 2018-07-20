@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Orleans;
 using Orleans.Concurrency;
 using Orleans.Streams.RabbitMq;
@@ -15,9 +17,17 @@ namespace RabbitMqStreamTests
     [StatelessWorker]
     public class SenderGrain : Grain, ISenderGrain
     {
+        private ILogger _logger;
+
+        public override async Task OnActivateAsync()
+        {
+            await base.OnActivateAsync();
+            _logger = ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger($"{typeof(SenderGrain).FullName}.{this.GetPrimaryKey()}");
+        }
+
         public async Task SendMessage(Immutable<Message> message)
         {
-            GetLogger().Log(0, Orleans.Runtime.Severity.Info, $"SendMessage #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}", null, null);
+            _logger.LogInformation($"SendMessage #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}");
 
             while (true)
             {
@@ -30,7 +40,7 @@ namespace RabbitMqStreamTests
                 }
                 catch (RabbitMqException ex)
                 {
-                    GetLogger().Log(0, Orleans.Runtime.Severity.Error, $"SendMessage #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name} failed!", null, ex);
+                    _logger.LogError(ex, $"SendMessage #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name} failed!");
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(100));
             }

@@ -8,17 +8,8 @@ using static RabbitMqStreamTests.TestClusterUtils;
 namespace RabbitMqStreamTests
 {
     [TestClass]
-    public class RmqIntegrationTests
+    public class RmqIntegrationSerializerTests
     {
-        [TestMethod]
-        public async Task TestConcurrentProcessingWithPrefilledQueue()
-        {
-            await _cluster.TestRmqStreamProviderWithPrefilledQueue(
-                conn => { },
-                conn => { },
-                1000, 10);
-        }
-
         [TestMethod]
         public async Task TestConcurrentProcessingOnFly()
         {
@@ -41,7 +32,7 @@ namespace RabbitMqStreamTests
             _proxyProcess = StartProxy();
 
             // Orleans cluster
-            _cluster = CreateTestCluster(RmqSerializer.Default);
+            _cluster = CreateTestCluster(RmqSerializer.ProtoBuf);
         }
 
         [ClassCleanup]
