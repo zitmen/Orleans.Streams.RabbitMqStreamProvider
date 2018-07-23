@@ -7,15 +7,15 @@ Orleans persistent stream provider for RabbitMQ. This provider is reliable, thus
 Example configuration (see `TestCluster.Create()` in `Orleans.Streams.RabbitMqStreamProvider.Tests` for more):
 ```
 var silo = new SiloHostBuilder()
-	.UseLocalhostClustering()
-	.AddMemoryGrainStorage("PubSubStore")
-	.AddRabbitMqStream(Globals.StreamProviderNameDefault, configurator =>
+    .UseLocalhostClustering()
+    .AddMemoryGrainStorage("PubSubStore")
+    .AddRabbitMqStream(Globals.StreamProviderNameDefault, configurator =>
 	{
-		configurator.ConfigureRabbitMq(host: "localhost", port: 5672, virtualHost: "/",
-									   user: "guest", password: "guest", queueName: "test");
+        configurator.ConfigureRabbitMq(host: "localhost", port: 5672, virtualHost: "/",
+                                       user: "guest", password: "guest", queueName: "test");
 	})
-	.ConfigureLogging(log => log.AddConsole())
-	.Build();
+    .ConfigureLogging(log => log.AddConsole())
+    .Build();
 
 await silo.StartAsync();
 ```
