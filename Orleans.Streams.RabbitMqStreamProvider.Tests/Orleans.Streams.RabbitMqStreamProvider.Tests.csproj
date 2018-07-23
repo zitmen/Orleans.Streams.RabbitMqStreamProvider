@@ -45,6 +45,7 @@
     <Compile Include="IntegrationTestHelpers.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="ProtoBufBatchContainerSerializer.cs" />
+    <Compile Include="RmqHelpers.cs" />
     <Compile Include="RmqIntegrationSerializerTests.cs" />
     <Compile Include="ToxiProxyHelpers.cs" />
     <Compile Include="ReceiverGrain.cs" />

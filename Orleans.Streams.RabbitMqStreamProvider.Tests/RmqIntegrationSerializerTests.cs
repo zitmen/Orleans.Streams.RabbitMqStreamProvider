@@ -23,11 +23,15 @@ namespace RabbitMqStreamTests
         private static TestCluster _cluster;
         private static Process _proxyProcess;
 
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            RmqHelpers.EnsureEmptyQueue();
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            // TODO: ensure empty RMQ
-
             // ToxiProxy
             _proxyProcess = StartProxy();
 
