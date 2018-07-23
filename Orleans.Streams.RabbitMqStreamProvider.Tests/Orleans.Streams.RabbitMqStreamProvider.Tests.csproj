@@ -136,7 +136,7 @@
       <HintPath>..\packages\Microsoft.Orleans.Core.Abstractions.2.0.0\lib\netstandard2.0\Orleans.Core.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Orleans.Runtime, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Orleans.OrleansRuntime.2.0.3\lib\netstandard2.0\Orleans.Runtime.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Orleans.OrleansRuntime.2.0.4\lib\netstandard2.0\Orleans.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Orleans.Runtime.Abstractions, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Orleans.Runtime.Abstractions.2.0.0\lib\netstandard2.0\Orleans.Runtime.Abstractions.dll</HintPath>
