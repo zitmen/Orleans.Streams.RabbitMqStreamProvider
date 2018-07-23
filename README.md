@@ -9,7 +9,7 @@ Example configuration (see `TestCluster.Create()` in `Orleans.Streams.RabbitMqSt
 var silo = new SiloHostBuilder()
     .UseLocalhostClustering()
     .AddMemoryGrainStorage("PubSubStore")
-    .AddRabbitMqStream(Globals.StreamProviderNameDefault, configurator =>
+    .AddRabbitMqStream("RMQProvider", configurator =>
     {
         configurator.ConfigureRabbitMq(host: "localhost", port: 5672, virtualHost: "/",
                                        user: "guest", password: "guest", queueName: "test");
