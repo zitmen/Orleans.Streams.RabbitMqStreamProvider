@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Orleans.TestingHost;
 using static RabbitMqStreamTests.ToxiProxyHelpers;
-using static RabbitMqStreamTests.TestClusterUtils;
 
 namespace RabbitMqStreamTests
 {
@@ -26,7 +24,15 @@ namespace RabbitMqStreamTests
                 conn => { },
                 1000, 10);
         }
-        
+
+        [TestMethod]
+        public async Task TestConcurrentProcessingOnFlyWithCustomSerializer()
+        {
+            await _cluster.TestRmqStreamProviderOnFly(
+                conn => { },
+                1000, 10, RmqSerializer.ProtoBuf);
+        }
+
         #region Test class setup
 
         private static TestCluster _cluster;
@@ -45,7 +51,7 @@ namespace RabbitMqStreamTests
             _proxyProcess = StartProxy();
 
             // Orleans cluster
-            _cluster = CreateTestCluster(RmqSerializer.Default);
+            _cluster = Task.Run(() => TestCluster.Create()).Result;
         }
 
         [ClassCleanup]

@@ -2,6 +2,12 @@
 
 namespace RabbitMqStreamTests
 {
+    public enum RmqSerializer
+    {
+        Default,
+        ProtoBuf
+    }
+
     public static class RmqHelpers
     {
         public static void EnsureEmptyQueue()
@@ -18,7 +24,8 @@ namespace RabbitMqStreamTests
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueuePurge("test");
+                channel.QueuePurge(Globals.StreamNameSpaceDefault);
+                channel.QueuePurge(Globals.StreamNameSpaceProtoBuf);
             }
         }
     }

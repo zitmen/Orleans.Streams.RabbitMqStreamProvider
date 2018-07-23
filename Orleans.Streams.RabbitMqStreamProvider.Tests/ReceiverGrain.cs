@@ -13,26 +13,32 @@ namespace RabbitMqStreamTests
     {
     }
 
-    [ImplicitStreamSubscription(Globals.StreamNameSpace)]
+    [ImplicitStreamSubscription(Globals.StreamNameSpaceDefault)]
+    [ImplicitStreamSubscription(Globals.StreamNameSpaceProtoBuf)]
     public class ReceiverGrain : Grain, IReceiverGrain
     {
         private ILogger _logger;
-        private StreamSubscriptionHandle<Message> _subscription;
+        private StreamSubscriptionHandle<Message> _subscriptionDefault;
+        private StreamSubscriptionHandle<Message> _subscriptionProtoBuf;
 
         public override async Task OnActivateAsync()
         {
             await base.OnActivateAsync();
             _logger = ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger($"{typeof(ReceiverGrain).FullName}.{this.GetPrimaryKey()}");
             _logger.LogInformation($"OnActivateAsync [{RuntimeIdentity}],[{IdentityString}][{this.GetPrimaryKey()}] from thread {Thread.CurrentThread.Name}");
-            _subscription = await GetStreamProvider(Globals.StreamProviderName)
-                .GetStream<Message>(this.GetPrimaryKey(), Globals.StreamNameSpace)
+            _subscriptionDefault = await GetStreamProvider(Globals.StreamProviderNameDefault)
+                .GetStream<Message>(this.GetPrimaryKey(), Globals.StreamNameSpaceDefault)
+                .SubscribeAsync(OnNextAsync);
+            _subscriptionProtoBuf = await GetStreamProvider(Globals.StreamProviderNameProtoBuf)
+                .GetStream<Message>(this.GetPrimaryKey(), Globals.StreamNameSpaceProtoBuf)
                 .SubscribeAsync(OnNextAsync);
         }
 
         public override async Task OnDeactivateAsync()
         {
             _logger.LogInformation($"OnDeactivateAsync [{RuntimeIdentity}],[{IdentityString}][{this.GetPrimaryKey()}] from thread {Thread.CurrentThread.Name}");
-            await _subscription.UnsubscribeAsync();
+            await _subscriptionDefault.UnsubscribeAsync();
+            await _subscriptionProtoBuf.UnsubscribeAsync();
             await base.OnDeactivateAsync();
         }
 

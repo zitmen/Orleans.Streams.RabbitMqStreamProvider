@@ -11,7 +11,7 @@ namespace RabbitMqStreamTests
 {
     public interface ISenderGrain : IGrainWithGuidKey
     {
-        Task SendMessage(Immutable<Message> message);
+        Task SendMessage(Immutable<Message> message, RmqSerializer serializer);
     }
 
     [StatelessWorker]
@@ -25,7 +25,19 @@ namespace RabbitMqStreamTests
             _logger = ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger($"{typeof(SenderGrain).FullName}.{this.GetPrimaryKey()}");
         }
 
-        public async Task SendMessage(Immutable<Message> message)
+        public Task SendMessage(Immutable<Message> message, RmqSerializer serializer)
+        {
+            switch (serializer)
+            {
+                case RmqSerializer.ProtoBuf:
+                    return SendMessage(message, Globals.StreamProviderNameProtoBuf, Globals.StreamNameSpaceProtoBuf);
+
+                default:
+                    return SendMessage(message, Globals.StreamProviderNameDefault, Globals.StreamNameSpaceDefault);
+            }
+        }
+
+        private async Task SendMessage(Immutable<Message> message, string streamProviderName, string streamNameSpace)
         {
             _logger.LogInformation($"SendMessage #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}");
 
@@ -33,8 +45,8 @@ namespace RabbitMqStreamTests
             {
                 try
                 {
-                    await GetStreamProvider(Globals.StreamProviderName)
-                        .GetStream<Message>(Guid.NewGuid(), Globals.StreamNameSpace)
+                    await GetStreamProvider(streamProviderName)
+                        .GetStream<Message>(Guid.NewGuid(), streamNameSpace)
                         .OnNextAsync(message.Value);
                     break;
                 }

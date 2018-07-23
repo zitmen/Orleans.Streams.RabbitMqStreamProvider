@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Orleans.TestingHost;
 using Toxiproxy.Net.Toxics;
 using static RabbitMqStreamTests.ToxiProxyHelpers;
-using static RabbitMqStreamTests.TestClusterUtils;
 
 // Note: receiveng seems to be more sensitive to network errors than sending, thus reducing latency in some of the test cases
 // Note: when running tests individually they pass; when running in batch, it fails with timeout; there is a problem with shutting down silo and toxyproxi process -> ignore the test class
@@ -157,7 +155,7 @@ namespace RabbitMqStreamTests
             _proxyProcess = StartProxy();
 
             // Orleans cluster
-            _cluster = CreateTestCluster(RmqSerializer.Default);
+            _cluster = Task.Run(() => TestCluster.Create()).Result;
         }
 
         [ClassCleanup]

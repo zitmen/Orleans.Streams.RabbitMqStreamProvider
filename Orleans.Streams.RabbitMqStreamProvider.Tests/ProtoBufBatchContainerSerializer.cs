@@ -25,7 +25,7 @@ namespace RabbitMqStreamTests
                 var notification = Serializer.Deserialize<Message>(ms);
                 return new RabbitMqBatchContainer(
                     Guid.NewGuid(),
-                    Globals.StreamNameSpace,
+                    Globals.StreamNameSpaceProtoBuf,
                     new List<object> { notification },
                     new Dictionary<string, object>());
             }

@@ -46,12 +46,11 @@
     <Compile Include="Message.cs" />
     <Compile Include="ProtoBufBatchContainerSerializer.cs" />
     <Compile Include="RmqHelpers.cs" />
-    <Compile Include="RmqIntegrationSerializerTests.cs" />
     <Compile Include="ToxiProxyHelpers.cs" />
     <Compile Include="ReceiverGrain.cs" />
     <Compile Include="RmqResiliencyTests.cs" />
     <Compile Include="SenderGrain.cs" />
-    <Compile Include="TestClusterUtils.cs" />
+    <Compile Include="TestCluster.cs" />
     <Compile Include="RmqIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -141,9 +140,6 @@
     </Reference>
     <Reference Include="Orleans.Runtime.Abstractions, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Orleans.Runtime.Abstractions.2.0.0\lib\netstandard2.0\Orleans.Runtime.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Orleans.TestingHost, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Orleans.TestingHost.2.0.3\lib\netstandard2.0\Orleans.TestingHost.dll</HintPath>
     </Reference>
     <Reference Include="OrleansProviders, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Orleans.OrleansProviders.2.0.0\lib\netstandard2.0\OrleansProviders.dll</HintPath>
