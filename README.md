@@ -10,10 +10,10 @@ var silo = new SiloHostBuilder()
     .UseLocalhostClustering()
     .AddMemoryGrainStorage("PubSubStore")
     .AddRabbitMqStream(Globals.StreamProviderNameDefault, configurator =>
-	{
+    {
         configurator.ConfigureRabbitMq(host: "localhost", port: 5672, virtualHost: "/",
                                        user: "guest", password: "guest", queueName: "test");
-	})
+    })
     .ConfigureLogging(log => log.AddConsole())
     .Build();
 

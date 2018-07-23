@@ -36,9 +36,9 @@ build:
   verbosity: normal
 test: on
 after_test:
-- ps: dotnet pack .\Orleans.Streams.RabbitMqStreamProvider\Orleans.Streams.RabbitMqStreamProvider.csproj --configuration "Release;Platform=AnyCPU" --output .\artifacts /p:Version=${env:APPVEYOR_BUILD_VERSION}
+- ps: dotnet pack .\Orleans.Streams.RabbitMqStreamProvider\Orleans.Streams.RabbitMqStreamProvider.csproj --configuration "Release;Platform=AnyCPU" --output ..\artifacts /p:Version=${env:APPVEYOR_BUILD_VERSION}
 artifacts:
-- path: .\Orleans.Streams.RabbitMqStreamProvider\artifacts\*.nupkg
+- path: .\artifacts\*.nupkg
   name: Puhlish NuGets
 deploy:
 - provider: NuGet
