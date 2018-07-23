@@ -12,6 +12,8 @@ namespace RabbitMqStreamTests
 
         public static Process StartProxy()
         {
+            StopProxyIfRunning();
+
             var proxyProcess = new Process
             {
                 StartInfo = new ProcessStartInfo(@"..\..\..\packages\Toxiproxy.Net.2.0.1\compiled\Win64\toxiproxy-server-2.1.2-windows-amd64.exe")
@@ -27,6 +29,15 @@ namespace RabbitMqStreamTests
             });
 
             return proxyProcess;
+        }
+
+        public static void StopProxyIfRunning()
+        {
+            foreach (var process in Process.GetProcessesByName("toxiproxy-server-2.1.2-windows-amd64"))
+            {
+                process.CloseMainWindow();
+                process.WaitForExit();
+            }
         }
 
         public static void AddTimeoutToRmqProxy(Connection connection, ToxicDirection direction, double toxicity, int timeout)
