@@ -93,6 +93,12 @@
     <Reference Include="Microsoft.Extensions.DependencyModel, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyModel.2.0.0\lib\net451\Microsoft.Extensions.DependencyModel.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.2.1.0\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Hosting.Abstractions.2.1.0\lib\netstandard2.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Extensions.Logging, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Logging.2.1.1\lib\netstandard2.0\Microsoft.Extensions.Logging.dll</HintPath>
     </Reference>
@@ -127,22 +133,22 @@
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Orleans.CodeGeneration, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Orleans.OrleansCodeGenerator.2.1.0\lib\netstandard2.0\Orleans.CodeGeneration.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Orleans.OrleansCodeGenerator.2.3.0\lib\netstandard2.0\Orleans.CodeGeneration.dll</HintPath>
     </Reference>
     <Reference Include="Orleans.Core, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Orleans.Core.2.1.0\lib\netstandard2.0\Orleans.Core.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Orleans.Core.2.3.0\lib\netstandard2.0\Orleans.Core.dll</HintPath>
     </Reference>
     <Reference Include="Orleans.Core.Abstractions, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Orleans.Core.Abstractions.2.1.0\lib\netstandard2.0\Orleans.Core.Abstractions.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Orleans.Core.Abstractions.2.3.0\lib\netstandard2.0\Orleans.Core.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Orleans.Runtime, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Orleans.OrleansRuntime.2.1.0\lib\netstandard2.0\Orleans.Runtime.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Orleans.OrleansRuntime.2.3.0\lib\netstandard2.0\Orleans.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Orleans.Runtime.Abstractions, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Orleans.Runtime.Abstractions.2.1.0\lib\netstandard2.0\Orleans.Runtime.Abstractions.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Orleans.Runtime.Abstractions.2.3.0\lib\netstandard2.0\Orleans.Runtime.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="OrleansProviders, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Orleans.OrleansProviders.2.1.0\lib\netstandard2.0\OrleansProviders.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Orleans.OrleansProviders.2.3.0\lib\netstandard2.0\OrleansProviders.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net, Version=2.3.13.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.3.13\lib\net40\protobuf-net.dll</HintPath>
@@ -324,8 +330,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.1.11\build\net45\MSTest.TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.1.11\build\net45\MSTest.TestAdapter.props'))" />
     <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.1.11\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.1.11\build\net45\MSTest.TestAdapter.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Orleans.OrleansCodeGenerator.Build.2.1.0\build\Microsoft.Orleans.OrleansCodeGenerator.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Orleans.OrleansCodeGenerator.Build.2.1.0\build\Microsoft.Orleans.OrleansCodeGenerator.Build.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Orleans.OrleansCodeGenerator.Build.2.3.0\build\Microsoft.Orleans.OrleansCodeGenerator.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Orleans.OrleansCodeGenerator.Build.2.3.0\build\Microsoft.Orleans.OrleansCodeGenerator.Build.targets'))" />
   </Target>
   <Import Project="..\packages\MSTest.TestAdapter.1.1.11\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.1.11\build\net45\MSTest.TestAdapter.targets')" />
-  <Import Project="..\packages\Microsoft.Orleans.OrleansCodeGenerator.Build.2.1.0\build\Microsoft.Orleans.OrleansCodeGenerator.Build.targets" Condition="Exists('..\packages\Microsoft.Orleans.OrleansCodeGenerator.Build.2.1.0\build\Microsoft.Orleans.OrleansCodeGenerator.Build.targets')" />
+  <Import Project="..\packages\Microsoft.Orleans.OrleansCodeGenerator.Build.2.3.0\build\Microsoft.Orleans.OrleansCodeGenerator.Build.targets" Condition="Exists('..\packages\Microsoft.Orleans.OrleansCodeGenerator.Build.2.3.0\build\Microsoft.Orleans.OrleansCodeGenerator.Build.targets')" />
 </Project>

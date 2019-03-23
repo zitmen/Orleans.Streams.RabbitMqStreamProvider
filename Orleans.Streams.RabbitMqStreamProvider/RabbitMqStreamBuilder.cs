@@ -9,12 +9,10 @@ namespace Orleans.Streaming
 {
     public class SiloRabbitMqStreamConfigurator<TSerializer> : SiloPersistentStreamConfigurator where TSerializer : IBatchContainerSerializer, new()
     {
-        public SiloRabbitMqStreamConfigurator(string name, ISiloHostBuilder builder)
-            : base(name, builder, RabbitMqAdapterFactory<TSerializer>.Create)
+        public SiloRabbitMqStreamConfigurator(string name, Action<Action<IServiceCollection>> configureDelegate, ISiloHostBuilder builder)
+            : base(name, configureDelegate, RabbitMqAdapterFactory<TSerializer>.Create)
         {
-            siloBuilder
-                .ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(RabbitMqAdapterFactory<TSerializer>).Assembly))
-                .ConfigureServices(services =>
+            this.configureDelegate(services =>
                 {
                     services.ConfigureNamedOptionForLogging<RabbitMqOptions>(name)
                         .AddTransient<IConfigurationValidator>(sp => new RabbitMqOptionsValidator(sp.GetOptionsByName<RabbitMqOptions>(name), name))
@@ -61,11 +59,12 @@ namespace Orleans.Streaming
         public ClusterClientRabbitMqStreamConfigurator(string name, IClientBuilder builder)
             : base(name, builder, RabbitMqAdapterFactory<TSerializer>.Create)
         {
-            clientBuilder.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(RabbitMqAdapterFactory<TSerializer>).Assembly))
-                 .ConfigureServices(services =>
+            clientBuilder
+                .ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(RabbitMqAdapterFactory<TSerializer>).Assembly))
+                .ConfigureServices(services =>
                     services.ConfigureNamedOptionForLogging<RabbitMqOptions>(name)
-                    .AddTransient<IConfigurationValidator>(sp => new RabbitMqOptionsValidator(sp.GetOptionsByName<RabbitMqOptions>(name), name))
-                    .ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(name));
+                        .AddTransient<IConfigurationValidator>(sp => new RabbitMqOptionsValidator(sp.GetOptionsByName<RabbitMqOptions>(name), name))
+                        .ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(name));
 
         }
 
