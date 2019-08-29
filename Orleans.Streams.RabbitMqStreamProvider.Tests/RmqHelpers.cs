@@ -1,4 +1,5 @@
 ﻿using RabbitMQ.Client;
+using System;
 
 namespace RabbitMqStreamTests
 {
@@ -14,18 +15,25 @@ namespace RabbitMqStreamTests
         {
             var factory = new ConnectionFactory
             {
-                HostName = "localhost",
-                VirtualHost = "/",
+                HostName = "orlytest.golamago.online",
+                VirtualHost = "stream-test",
                 Port = 5672,
-                UserName = "guest",
-                Password = "guest"
+                UserName = "lama-testing",
+                Password = "testing"
             };
 
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
+            try
             {
-                channel.QueuePurge(Globals.StreamNameSpaceDefault);
-                channel.QueuePurge(Globals.StreamNameSpaceProtoBuf);
+                using (var connection = factory.CreateConnection())
+                using (var channel = connection.CreateModel())
+                {
+                    channel.QueuePurge(Globals.StreamNameSpaceDefault);
+                    channel.QueuePurge(Globals.StreamNameSpaceProtoBuf);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
     }
