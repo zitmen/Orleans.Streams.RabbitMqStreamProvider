@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.Configuration;
+using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
 using Orleans.Streams.BatchContainer;
-using Orleans.Streams.Cache;
+using System;
+using System.Threading.Tasks;
 
 namespace Orleans.Streams
 {
@@ -29,7 +29,7 @@ namespace Orleans.Streams
             if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
 
-            _cache = new ConcurrentQueueAdapterCache(cachingOptions.CacheSize);
+            _cache = new SimpleQueueAdapterCache(new SimpleQueueCacheOptions { CacheSize = cachingOptions.CacheSize }, providerName, loggerFactory);
             _mapper = new HashRingBasedStreamQueueMapper(new HashRingStreamQueueMapperOptions { TotalQueueCount = rmqOptions.NumberOfQueues }, rmqOptions.QueueNamePrefix);
             _failureHandler = Task.FromResult<IStreamFailureHandler>(new NoOpStreamDeliveryFailureHandler(false));
 

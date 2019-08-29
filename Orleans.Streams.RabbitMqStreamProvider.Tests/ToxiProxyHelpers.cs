@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using Toxiproxy.Net;
 using Toxiproxy.Net.Toxics;
 
@@ -13,10 +14,15 @@ namespace RabbitMqStreamTests
         public static Process StartProxy()
         {
             StopProxyIfRunning();
-
+            var path = @"..\packages\toxiproxy.Net\2.0.1\compiled\Win64\toxiproxy-server-2.1.2-windows-amd64.exe";
+            var dir = Directory.GetCurrentDirectory();
+            while(new DirectoryInfo(dir).Name != "Orleans.Streams.RabbitMqStreamProvider.Tests")
+            {
+                dir = Directory.GetParent(dir).FullName;
+            }
             var proxyProcess = new Process
             {
-                StartInfo = new ProcessStartInfo(@"..\..\..\packages\Toxiproxy.Net.2.0.1\compiled\Win64\toxiproxy-server-2.1.2-windows-amd64.exe")
+                StartInfo = new ProcessStartInfo(Path.Combine(dir, path))
             };
             proxyProcess.Start();
 
