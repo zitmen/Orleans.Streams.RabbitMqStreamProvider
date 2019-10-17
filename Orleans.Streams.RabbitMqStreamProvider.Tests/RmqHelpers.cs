@@ -15,11 +15,11 @@ namespace RabbitMqStreamTests
         {
             var factory = new ConnectionFactory
             {
-                HostName = "localhost",
-                VirtualHost = "/",
+                HostName = "orlytest.golamago.online",
+                VirtualHost = "stream-test",
                 Port = 5672,
-                UserName = "guest",
-                Password = "guest"
+                UserName = "lama-testing",
+                Password = "testing"
             };
 
             try

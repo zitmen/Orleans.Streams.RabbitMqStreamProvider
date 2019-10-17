@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="3.0.0-rc1" />
+    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="3.0.0-rc2" />
     <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
   </ItemGroup>
 </Project>

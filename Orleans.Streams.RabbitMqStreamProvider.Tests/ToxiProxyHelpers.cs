@@ -31,7 +31,7 @@ namespace RabbitMqStreamTests
                 Name = RmqProxyName,
                 Enabled = true,
                 Listen = $"localhost:{RmqProxyPort}",
-                Upstream = $"localhost:{RmqPort}"
+                Upstream = $"orlytest.golamago.online:{RmqPort}"
             });
 
             return proxyProcess;
