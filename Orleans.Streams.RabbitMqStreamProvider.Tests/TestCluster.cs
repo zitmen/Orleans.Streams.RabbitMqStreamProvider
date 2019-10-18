@@ -142,7 +142,7 @@ namespace RabbitMqStreamTests
                             options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(100);
                         }));
                 })
-                .ConfigureLogging(log => log.AddConsole());
+                .ConfigureLogging(log => log.AddConsole().AddDebug());
         }
 
         public static IClientBuilder ConfigureStreamsAndLogging(this IClientBuilder builder)
@@ -158,7 +158,7 @@ namespace RabbitMqStreamTests
                     configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
                         virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceProtoBuf);
                 })
-                .ConfigureLogging(log => log.AddConsole());
+                .ConfigureLogging(log => log.AddConsole().AddDebug());
         }
     }
 }

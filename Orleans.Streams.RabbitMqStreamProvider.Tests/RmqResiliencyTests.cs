@@ -5,7 +5,7 @@ using Toxiproxy.Net.Toxics;
 using static RabbitMqStreamTests.ToxiProxyHelpers;
 
 // Note: receiveng seems to be more sensitive to network errors than sending, thus reducing latency in some of the test cases
-// Note: when running tests individually they pass; when running in batch, it fails with timeout; there is a problem with shutting down silo and toxyproxi process -> ignore the test class
+// Note: when running tests individually they pass; when running in batch, it fails with timeout + there is a problem with shutting down silo -> ignore the test class
 
 namespace RabbitMqStreamTests
 {
@@ -155,17 +155,16 @@ namespace RabbitMqStreamTests
             _proxyProcess = StartProxy();
 
             // Orleans cluster
-            _cluster = Task.Run(() => TestCluster.Create()).Result;
+            _cluster = Task.Run(TestCluster.Create).GetAwaiter().GetResult();
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
             // close first to avoid a case where Silo hangs, I stop the test and the proxy process keeps running
-            _proxyProcess.CloseMainWindow();
-            _proxyProcess.WaitForExit();
+            _proxyProcess.Terminate();
 
-            _cluster.Shutdown();
+            _cluster.Shutdown().GetAwaiter().GetResult();
         }
 
         #endregion

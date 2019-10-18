@@ -51,17 +51,16 @@ namespace RabbitMqStreamTests
             _proxyProcess = StartProxy();
 
             // Orleans cluster
-            _cluster = Task.Run(() => TestCluster.Create()).Result;
+            _cluster = Task.Run(TestCluster.Create).GetAwaiter().GetResult();
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
             // close first to avoid a case where Silo hangs, I stop the test and the proxy process keeps running
-            _proxyProcess.CloseMainWindow();
-            _proxyProcess.WaitForExit();
+            _proxyProcess.Terminate();
 
-            _cluster.Shutdown();
+            _cluster.Shutdown().GetAwaiter().GetResult();
         }
 
         #endregion

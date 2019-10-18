@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Toxiproxy.Net;
 using Toxiproxy.Net.Toxics;
 
@@ -16,17 +17,17 @@ namespace RabbitMqStreamTests
 
             var proxyProcess = new Process
             {
-                StartInfo = new ProcessStartInfo(@"..\..\..\packages\Toxiproxy.Net.2.0.1\compiled\Win64\toxiproxy-server-2.1.2-windows-amd64.exe")
+                StartInfo = new ProcessStartInfo(@"..\..\..\..\packages\toxiproxy.net\2.0.1\compiled\Win64\toxiproxy-server-2.1.2-windows-amd64.exe")
             };
             proxyProcess.Start();
 
-            new Connection().Client().Add(new Proxy
+            new Connection().Client().AddAsync(new Proxy
             {
                 Name = RmqProxyName,
                 Enabled = true,
                 Listen = $"localhost:{RmqProxyPort}",
                 Upstream = $"localhost:{RmqPort}"
-            });
+            }).GetAwaiter().GetResult();
 
             return proxyProcess;
         }
@@ -35,15 +36,14 @@ namespace RabbitMqStreamTests
         {
             foreach (var process in Process.GetProcessesByName("toxiproxy-server-2.1.2-windows-amd64"))
             {
-                process.CloseMainWindow();
-                process.WaitForExit();
+                process.Terminate();
             }
         }
 
         public static void AddTimeoutToRmqProxy(Connection connection, ToxicDirection direction, double toxicity, int timeout)
         {
-            var proxy = connection.Client().FindProxy(RmqProxyName);
-            proxy.Add(new TimeoutToxic
+            var proxy = connection.Client().FindProxyAsync(RmqProxyName).GetAwaiter().GetResult();
+            proxy.AddAsync(new TimeoutToxic
             {
                 Name = "Timeout",
                 Toxicity = toxicity,
@@ -52,14 +52,14 @@ namespace RabbitMqStreamTests
                 {
                     Timeout = timeout
                 }
-            });
-            proxy.Update();
+            }).GetAwaiter().GetResult();
+            proxy.UpdateAsync().GetAwaiter().GetResult();
         }
 
         public static void AddLatencyToRmqProxy(Connection connection, ToxicDirection direction, double toxicity, int latency, int jitter)
         {
-            var proxy = connection.Client().FindProxy(RmqProxyName);
-            proxy.Add(new LatencyToxic
+            var proxy = connection.Client().FindProxyAsync(RmqProxyName).GetAwaiter().GetResult();
+            proxy.AddAsync(new LatencyToxic
             {
                 Name = "Latency",
                 Toxicity = toxicity,
@@ -69,8 +69,8 @@ namespace RabbitMqStreamTests
                     Latency = latency,
                     Jitter = jitter
                 }
-            });
-            proxy.Update();
+            }).GetAwaiter().GetResult();
+            proxy.UpdateAsync().GetAwaiter().GetResult();
         }
     }
 }
