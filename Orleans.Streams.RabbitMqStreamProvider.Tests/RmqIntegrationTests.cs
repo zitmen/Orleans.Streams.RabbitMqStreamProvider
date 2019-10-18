@@ -12,25 +12,29 @@ namespace RabbitMqStreamTests
         public async Task TestConcurrentProcessingWithPrefilledQueue()
         {
             await _cluster.TestRmqStreamProviderWithPrefilledQueue(
-                conn => { },
-                conn => { },
-                1000, 10);
+                setupProxyForReceiver: conn => { },
+                setupProxyForSender: conn => { },
+                nMessages: 1000,
+                itersToWait: 10);
         }
 
         [TestMethod]
         public async Task TestConcurrentProcessingOnFly()
         {
             await _cluster.TestRmqStreamProviderOnFly(
-                conn => { },
-                1000, 10);
+                setupProxy: conn => { },
+                nMessages: 1000,
+                itersToWait: 10);
         }
 
         [TestMethod]
         public async Task TestConcurrentProcessingOnFlyWithCustomSerializer()
         {
             await _cluster.TestRmqStreamProviderOnFly(
-                conn => { },
-                1000, 10, RmqSerializer.ProtoBuf);
+                setupProxy: conn => { },
+                nMessages: 1000,
+                itersToWait: 10,
+                serializer: RmqSerializer.ProtoBuf);
         }
 
         #region Test class setup
