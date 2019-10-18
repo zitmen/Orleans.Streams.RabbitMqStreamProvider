@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Toxiproxy.Net;
 using Toxiproxy.Net.Toxics;
 
@@ -17,7 +16,7 @@ namespace RabbitMqStreamTests
 
             var proxyProcess = new Process
             {
-                StartInfo = new ProcessStartInfo(@"..\..\..\..\packages\toxiproxy.net\2.0.1\compiled\Win64\toxiproxy-server-2.1.2-windows-amd64.exe")
+                StartInfo = new ProcessStartInfo("bin-toxiproxy/toxiproxy-server-2.1.2-windows-amd64.exe")
             };
             proxyProcess.Start();
 
