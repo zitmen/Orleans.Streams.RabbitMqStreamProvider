@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static RabbitMqStreamTests.ToxiProxyHelpers;
@@ -15,7 +16,7 @@ namespace RabbitMqStreamTests
                 setupProxyForReceiver: conn => { },
                 setupProxyForSender: conn => { },
                 nMessages: 1000,
-                itersToWait: 10);
+                itersToWait: 20);
         }
 
         [TestMethod]
@@ -24,7 +25,7 @@ namespace RabbitMqStreamTests
             await _cluster.TestRmqStreamProviderOnFly(
                 setupProxy: conn => { },
                 nMessages: 1000,
-                itersToWait: 10);
+                itersToWait: 20);
         }
 
         [TestMethod]
@@ -33,7 +34,7 @@ namespace RabbitMqStreamTests
             await _cluster.TestRmqStreamProviderOnFly(
                 setupProxy: conn => { },
                 nMessages: 1000,
-                itersToWait: 10,
+                itersToWait: 20,
                 serializer: RmqSerializer.ProtoBuf);
         }
 
@@ -55,7 +56,10 @@ namespace RabbitMqStreamTests
             _proxyProcess = StartProxy();
 
             // Orleans cluster
-            _cluster = Task.Run(TestCluster.Create).GetAwaiter().GetResult();
+            _cluster = TestCluster.Create().GetAwaiter().GetResult();
+
+            // try to wait little longer in case everything is slow
+            Task.Delay(TimeSpan.FromMinutes(1)).GetAwaiter().GetResult();
         }
 
         [ClassCleanup]
