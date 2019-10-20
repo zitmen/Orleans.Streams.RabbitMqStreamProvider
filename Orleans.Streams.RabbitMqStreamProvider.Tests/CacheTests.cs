@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Orleans.Providers.Streams.Common;
 using Orleans.Streams;
 using Orleans.Streams.BatchContainer;
@@ -11,10 +11,10 @@ using Orleans.Streams.Cache;
 
 namespace RabbitMqStreamTests
 {
-    [TestClass]
+    [TestFixture]
     public class CacheTests
     {
-        [TestMethod]
+        [Test]
         public async Task RunCacheReadHeavyUsageTestMultipleTimes()
         {
             for (int i = 0; i < 10; i++)
@@ -23,7 +23,7 @@ namespace RabbitMqStreamTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public async Task RunCacheWriteHeavyUsageTestMultipleTimes()
         {
             for (int i = 0; i < 10; i++)
@@ -32,7 +32,7 @@ namespace RabbitMqStreamTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestOrleansCacheCursorReadHeavyUsage()
         {
             int cacheSize = 1000000;

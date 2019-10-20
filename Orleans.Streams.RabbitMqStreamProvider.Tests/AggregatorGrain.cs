@@ -17,6 +17,8 @@ namespace RabbitMqStreamTests
         Task<bool> WereAllMessagesSent(Immutable<Message[]> messages);
         Task<bool> WereAllSentAlsoDelivered();
         Task<int> GetProcessingSilosCount();
+        Task<Message[]> GetAllSentMessages();
+        Task<Message[]> GetAllReceivedMessages();
     }
 
     public class AggregatorGrain : Grain, IAggregatorGrain
@@ -71,6 +73,16 @@ namespace RabbitMqStreamTests
         public Task<int> GetProcessingSilosCount()
         {
             return Task.FromResult(_receivedMessages.Values.Select(msg => ExtractRuntimeIdentity(msg.ProcessedBy)).Distinct().Count());
+        }
+
+        public Task<Message[]> GetAllSentMessages()
+        {
+            return Task.FromResult(_sentMessages.Values.ToArray());
+        }
+
+        public Task<Message[]> GetAllReceivedMessages()
+        {
+            return Task.FromResult(_receivedMessages.Values.ToArray());
         }
 
         private static string ExtractRuntimeIdentity(string processedBy)
