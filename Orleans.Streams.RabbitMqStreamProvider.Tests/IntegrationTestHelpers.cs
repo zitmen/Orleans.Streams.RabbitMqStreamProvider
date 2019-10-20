@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Orleans.Concurrency;
 using Toxiproxy.Net;
 
@@ -40,8 +41,8 @@ namespace RabbitMqStreamTests
                     await Task.Delay(TimeSpan.FromSeconds(10));
                 }
 
-                Assert.IsTrue(await AllMessagesSentAndDelivered(aggregator, messages));
-                Assert.AreEqual(cluster.Silos.Count(), await aggregator.GetProcessingSilosCount());
+                Assert.IsTrue(await AllMessagesSentAndDelivered(aggregator, messages), await PrintError(aggregator, messages));
+                Assert.AreEqual(cluster.Silos.Count(), await aggregator.GetProcessingSilosCount(), "Silo count mismatch!");
             }
         }
 
@@ -67,13 +68,23 @@ namespace RabbitMqStreamTests
                     await Task.Delay(TimeSpan.FromSeconds(10));
                 }
 
-                Assert.IsTrue(await AllMessagesSentAndDelivered(aggregator, messages));
-                Assert.AreEqual(cluster.Silos.Count(), await aggregator.GetProcessingSilosCount());
+                Assert.IsTrue(await AllMessagesSentAndDelivered(aggregator, messages), await PrintError(aggregator, messages));
+                Assert.AreEqual(cluster.Silos.Count(), await aggregator.GetProcessingSilosCount(), "Silo count mismatch!");
             }
         }
 
         private static async Task<bool> AllMessagesSentAndDelivered(IAggregatorGrain aggregator, Message[] messages)
             => await aggregator.WereAllMessagesSent(messages.AsImmutable()) &&
                await aggregator.WereAllSentAlsoDelivered();
+
+        private static async Task<string> PrintError(IAggregatorGrain aggregator, Message[] messages)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Expectation failed!");
+            sb.AppendLine($" -expected: {string.Join(',', messages.OrderBy(m => m.Id).Select(m => m.Id))}");
+            sb.AppendLine($" -sent    : {string.Join(',', (await aggregator.GetAllSentMessages()).OrderBy(m => m.Id).Select(m => m.Id))}");
+            sb.AppendLine($" -received: {string.Join(',', (await aggregator.GetAllReceivedMessages()).OrderBy(m => m.Id).Select(m => m.Id))}");
+            return sb.ToString();
+        }
     }
 }
