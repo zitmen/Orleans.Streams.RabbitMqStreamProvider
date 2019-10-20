@@ -1,21 +1,22 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Toxiproxy.Net.Toxics;
 using static RabbitMqStreamTests.ToxiProxyHelpers;
 
 // Note: receiveng seems to be more sensitive to network errors than sending, thus reducing latency in some of the test cases
-// Note: when running tests individually they pass; when running in batch, it fails with timeout; there is a problem with shutting down silo and toxyproxi process -> ignore the test class
+// Note: when running tests individually they pass; when running in batch, it fails with timeout + there is a problem with shutting down silo -> ignore the test class
 
 namespace RabbitMqStreamTests
 {
-    [Ignore]
-    [TestClass]
+    [Ignore("not stable")]
+    [TestFixture]
     public class RmqResiliencyTests
     {
         #region Timeout
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqTimeoutUpstreamWhileSending()
         {
             // tests send call
@@ -25,7 +26,7 @@ namespace RabbitMqStreamTests
                 1000, 10);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqTimeoutDownstreamWhileSending()
         {
             // tests (n)ack from the rmq to the client
@@ -35,7 +36,7 @@ namespace RabbitMqStreamTests
                 1000, 10);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqTimeoutUpstreamWhileReceiving()
         {
             // tests (n)ack from the client to the rmq
@@ -45,7 +46,7 @@ namespace RabbitMqStreamTests
                 1000, 10);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqTimeoutDownstreamWhileReceiving()
         {
             // tests receive call
@@ -55,7 +56,7 @@ namespace RabbitMqStreamTests
                 1000, 10);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqTimeoutUpstreamOnFly()
         {
             // tests (n)ack from the client to the rmq
@@ -64,7 +65,7 @@ namespace RabbitMqStreamTests
                 1000, 60);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqTimeoutDownstreamOnFly()
         {
             // tests receive call
@@ -77,7 +78,7 @@ namespace RabbitMqStreamTests
 
         #region Latency
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqLatencyUpstreamWhileSending()
         {
             // tests send call
@@ -87,7 +88,7 @@ namespace RabbitMqStreamTests
                 100, 60);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqLatencyDownstreamWhileSending()
         {
             // tests (n)ack from the rmq to the client
@@ -97,7 +98,7 @@ namespace RabbitMqStreamTests
                 100, 60);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqLatencyUpstreamWhileReceiving()
         {
             // tests (n)ack from the client to the rmq
@@ -107,7 +108,7 @@ namespace RabbitMqStreamTests
                 100, /*60*/int.MaxValue);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqLatencyDownstreamWhileReceiving()
         {
             // tests receive call
@@ -117,7 +118,7 @@ namespace RabbitMqStreamTests
                 100, 60);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqLatencyUpstreamOnFly()
         {
             // tests (n)ack from the client to the rmq
@@ -126,7 +127,7 @@ namespace RabbitMqStreamTests
                 100, 60);
         }
 
-        [TestMethod]
+        [Test]
         public async Task TestRmqLatencyDownstreamOnFly()
         {
             // tests receive call
@@ -142,30 +143,32 @@ namespace RabbitMqStreamTests
         private static TestCluster _cluster;
         private static Process _proxyProcess;
 
-        [TestInitialize]
+        [SetUp]
         public void TestInitialize()
         {
             RmqHelpers.EnsureEmptyQueue();
         }
 
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext context)
+        [OneTimeSetUp]
+        public static async Task ClassInitialize()
         {
             // ToxiProxy
             _proxyProcess = StartProxy();
 
             // Orleans cluster
-            _cluster = Task.Run(() => TestCluster.Create()).Result;
+            _cluster = await TestCluster.Create();
+
+            // try to wait little longer in case everything is slow
+            await Task.Delay(TimeSpan.FromMinutes(1));
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
+        [OneTimeTearDown]
+        public static async Task ClassCleanup()
         {
             // close first to avoid a case where Silo hangs, I stop the test and the proxy process keeps running
-            _proxyProcess.CloseMainWindow();
-            _proxyProcess.WaitForExit();
+            _proxyProcess.Terminate();
 
-            _cluster.Shutdown();
+            await _cluster.Shutdown();
         }
 
         #endregion

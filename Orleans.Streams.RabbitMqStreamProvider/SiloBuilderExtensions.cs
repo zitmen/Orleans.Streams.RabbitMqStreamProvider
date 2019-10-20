@@ -12,7 +12,7 @@ namespace Orleans.Hosting
         /// </summary>
         public static ISiloHostBuilder AddRabbitMqStream<TSerializer>(this ISiloHostBuilder builder, string name, Action<SiloRabbitMqStreamConfigurator<TSerializer>> configure) where TSerializer : IBatchContainerSerializer, new()
         {
-            configure?.Invoke(new SiloRabbitMqStreamConfigurator<TSerializer>(name, builder));
+            configure?.Invoke(new SiloRabbitMqStreamConfigurator<TSerializer>(name, configDelegate => builder.ConfigureServices(configDelegate)));
             return builder;
         }
 
