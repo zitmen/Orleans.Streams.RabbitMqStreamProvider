@@ -18,7 +18,7 @@ install:
 - start /B /WAIT %rabbitmq_installer_path% /S
 - ps: (Get-Service -Name RabbitMQ).Status
 
-version: 2.0.0.{build}
+version: 2.4.3.{build}
 assembly_info:
   patch: true
   file: AssemblyInfo.cs
@@ -44,6 +44,6 @@ deploy:
 - provider: NuGet
   server: https://www.nuget.org/api/v2/package
   api_key:
-    secure: H4JCQw+sdgjjdzvYzjUSW4Kgp8RV1TN17tDSUMJ00OHQvQ4mf0qpaBg0Sl6eyrZ2
+    secure: jKqn1+4xTu3UgMkHYDzA6DoU7FKnhWAkRdUHmFW+ppBkhD3q0VIKWEkk28zrj8C8
   skip_symbols: true
   artifact: /.*\.nupkg/

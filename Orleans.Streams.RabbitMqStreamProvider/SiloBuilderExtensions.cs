@@ -1,11 +1,10 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Orleans.ApplicationParts;
 using Orleans.Configuration;
-using Orleans.Streaming;
 using Orleans.Streams;
 using Orleans.Streams.BatchContainer;
+using System;
 
 namespace Orleans.Hosting
 {
