@@ -15,7 +15,7 @@ namespace RabbitMqStreamTests
         Task MessageSent(Immutable<Message> message);
         Task MessageReceived(Immutable<Message> message);
         Task<bool> WereAllMessagesSent(Immutable<Message[]> messages);
-        Task<bool> WereAllSentAlsoDelivered();
+        Task<bool> WereAllSentAlsoDelivered(int count);
         Task<int> GetProcessingSilosCount();
         Task<Message[]> GetAllSentMessages();
         Task<Message[]> GetAllReceivedMessages();
@@ -45,14 +45,20 @@ namespace RabbitMqStreamTests
         public Task MessageSent(Immutable<Message> message)
         {
             _logger.LogInformation($"MessageSent #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}");
-            _sentMessages.Add(message.Value.Id, message.Value);
+            if (_sentMessages.TryGetValue(message.Value.Id, out var value))
+                value.Count++;
+            else
+                _sentMessages.Add(message.Value.Id, message.Value);
             return Task.CompletedTask;
         }
 
         public Task MessageReceived(Immutable<Message> message)
         {
             _logger.LogInformation($"MessageReceived #{message.Value.Id} [{RuntimeIdentity}],[{IdentityString}] from thread {Thread.CurrentThread.Name}");
-            _receivedMessages.Add(message.Value.Id, message.Value);
+            if (_receivedMessages.TryGetValue(message.Value.Id, out var value))
+                value.Count++;
+            else
+                _receivedMessages.Add(message.Value.Id, message.Value);
             return Task.CompletedTask;
         }
 
@@ -63,11 +69,11 @@ namespace RabbitMqStreamTests
                 messages.Value.All(msg => _sentMessages.ContainsKey(msg.Id)));
         }
 
-        public Task<bool> WereAllSentAlsoDelivered()
+        public Task<bool> WereAllSentAlsoDelivered(int count)
         {
             return Task.FromResult(
                 _sentMessages.Count == _receivedMessages.Count &&
-                _sentMessages.Values.All(msg => _receivedMessages.ContainsKey(msg.Id) && _receivedMessages[msg.Id].Delivered));
+                _sentMessages.Values.All(msg => _receivedMessages.TryGetValue(msg.Id, out var message) && message.Delivered && message.Count == count));
         }
 
         public Task<int> GetProcessingSilosCount()

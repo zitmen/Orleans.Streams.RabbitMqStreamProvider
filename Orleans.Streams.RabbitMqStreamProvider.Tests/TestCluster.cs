@@ -120,7 +120,7 @@ namespace RabbitMqStreamTests
                 .AddRabbitMqStream(Globals.StreamProviderNameDefault, configurator =>
                 {
                     configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
-                        virtualHost: "stream-test", user: "lama-testing", password: "testing", queueName: Globals.StreamNameSpaceDefault);
+                        virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceDefault);
                     configurator.ConfigureCache(cacheSize: 100, cacheFillingTimeout: TimeSpan.FromSeconds(10));
                     configurator.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
                     configurator.ConfigurePullingAgent(ob => ob.Configure(
@@ -132,7 +132,7 @@ namespace RabbitMqStreamTests
                 .AddRabbitMqStream<ProtoBufBatchContainerSerializer>(Globals.StreamProviderNameProtoBuf, configurator =>
                 {
                     configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
-                        virtualHost: "stream-test", user: "lama-testing", password: "testing", queueName: Globals.StreamNameSpaceProtoBuf);
+                        virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceDefault);
                     configurator.ConfigureCache(cacheSize: 100, cacheFillingTimeout: TimeSpan.FromSeconds(10));
                     configurator.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
                     configurator.ConfigurePullingAgent(ob => ob.Configure(
@@ -155,12 +155,12 @@ namespace RabbitMqStreamTests
                 .AddRabbitMqStream(Globals.StreamProviderNameDefault, configurator =>
                 {
                     configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
-                        virtualHost: "stream-test", user: "lama-testing", password: "testing", queueName: Globals.StreamNameSpaceDefault);
+                        virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceDefault);
                 })
                 .AddRabbitMqStream<ProtoBufBatchContainerSerializer>(Globals.StreamProviderNameProtoBuf, configurator =>
                 {
                     configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
-                        virtualHost: "stream-test", user: "lama-testing", password: "testing", queueName: Globals.StreamNameSpaceProtoBuf);
+                        virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceDefault);
                 })
                 .ConfigureLogging(log => log
                     .ClearProviders()

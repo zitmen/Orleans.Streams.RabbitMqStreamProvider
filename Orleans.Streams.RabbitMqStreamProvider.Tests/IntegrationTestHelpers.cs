@@ -10,6 +10,8 @@ namespace RabbitMqStreamTests
 {
     internal static class IntegrationTestHelpers
     {
+        private const int ReceiversCount = 2; // Number of ReceiverGrain implicitly attached to stream
+
         public static async Task TestRmqStreamProviderWithPrefilledQueue(this TestCluster cluster, Action<Connection> setupProxyForSender, Action<Connection> setupProxyForReceiver, int nMessages, int itersToWait, RmqSerializer serializer = RmqSerializer.Default)
         {
             await cluster.StopPullingAgents();
@@ -75,15 +77,15 @@ namespace RabbitMqStreamTests
 
         private static async Task<bool> AllMessagesSentAndDelivered(IAggregatorGrain aggregator, Message[] messages)
             => await aggregator.WereAllMessagesSent(messages.AsImmutable()) &&
-               await aggregator.WereAllSentAlsoDelivered();
+               await aggregator.WereAllSentAlsoDelivered(ReceiversCount);
 
         private static async Task<string> PrintError(IAggregatorGrain aggregator, Message[] messages)
         {
             var sb = new StringBuilder();
             sb.AppendLine("Expectation failed!");
-            sb.AppendLine($" -expected: {string.Join(',', messages.OrderBy(m => m.Id).Select(m => m.Id))}");
-            sb.AppendLine($" -sent    : {string.Join(',', (await aggregator.GetAllSentMessages()).OrderBy(m => m.Id).Select(m => m.Id))}");
-            sb.AppendLine($" -received: {string.Join(',', (await aggregator.GetAllReceivedMessages()).OrderBy(m => m.Id).Select(m => m.Id))}");
+            sb.AppendLine($" -expected: {string.Join(',', messages.OrderBy(m => m.Id).Select(m => $"{m.Id} ({ReceiversCount})"))}");
+            sb.AppendLine($" -sent    : {string.Join(',', (await aggregator.GetAllSentMessages()).OrderBy(m => m.Id).Select(m => $"{m.Id} ({m.Count})"))}");
+            sb.AppendLine($" -received: {string.Join(',', (await aggregator.GetAllReceivedMessages()).OrderBy(m => m.Id).Select(m => $"{m.Id} ({m.Count})"))}");
             return sb.ToString();
         }
     }
