@@ -1,17 +1,19 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans.Configuration;
+using Orleans.Hosting;
 using Orleans.Streams;
 using Orleans.Streams.BatchContainer;
 
 namespace Orleans.Streaming
 {
-    public class SiloRabbitMqStreamConfigurator<TSerializer> : SiloPersistentStreamConfigurator where TSerializer : IBatchContainerSerializer, new()
+    public class SiloRabbitMqStreamConfigurator<TSerializer> : SiloPersistentStreamConfigurator
+        where TSerializer : IBatchContainerSerializer, new()
     {
         public SiloRabbitMqStreamConfigurator(string name, Action<Action<IServiceCollection>> configureDelegate)
             : base(name, configureDelegate, RabbitMqAdapterFactory<TSerializer>.Create)
         {
-            this.configureDelegate(services =>
+            ConfigureDelegate(services =>
                 {
                     services.ConfigureNamedOptionForLogging<RabbitMqOptions>(name)
                         .AddTransient<IConfigurationValidator>(sp => new RabbitMqOptionsValidator(sp.GetOptionsByName<RabbitMqOptions>(name), name))
@@ -22,7 +24,7 @@ namespace Orleans.Streaming
 
         public SiloRabbitMqStreamConfigurator<TSerializer> ConfigureRabbitMq(string host, int port, string virtualHost, string user, string password, string queueName, bool useQueuePartitioning = RabbitMqOptions.DefaultUseQueuePartitioning, int numberOfQueues = RabbitMqOptions.DefaultNumberOfQueues)
         {
-            Configure<RabbitMqOptions>(ob => ob.Configure(options =>
+            this.Configure<RabbitMqOptions>(ob => ob.Configure(options =>
                 {
                     options.HostName = host;
                     options.Port = port;
@@ -38,13 +40,13 @@ namespace Orleans.Streaming
 
         public SiloRabbitMqStreamConfigurator<TSerializer> ConfigureCache(int cacheSize)
         {
-            Configure<CachingOptions>(ob => ob.Configure(options => options.CacheSize = cacheSize));
+            this.Configure<CachingOptions>(ob => ob.Configure(options => options.CacheSize = cacheSize));
             return this;
         }
 
         public SiloRabbitMqStreamConfigurator<TSerializer> ConfigureCache(int cacheSize, TimeSpan cacheFillingTimeout)
         {
-            Configure<CachingOptions>(ob => ob.Configure(options =>
+            this.Configure<CachingOptions>(ob => ob.Configure(options =>
                 {
                     options.CacheSize = cacheSize;
                     options.CacheFillingTimeout = cacheFillingTimeout;
@@ -53,12 +55,13 @@ namespace Orleans.Streaming
         }
     }
 
-    public class ClusterClientRabbitMqStreamConfigurator<TSerializer> : ClusterClientPersistentStreamConfigurator where TSerializer : IBatchContainerSerializer, new()
+    public class ClusterClientRabbitMqStreamConfigurator<TSerializer> : ClusterClientPersistentStreamConfigurator
+        where TSerializer : IBatchContainerSerializer, new()
     {
         public ClusterClientRabbitMqStreamConfigurator(string name, IClientBuilder builder)
             : base(name, builder, RabbitMqAdapterFactory<TSerializer>.Create)
         {
-            clientBuilder
+            builder
                 .ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(RabbitMqAdapterFactory<TSerializer>).Assembly))
                 .ConfigureServices(services => services
                     .ConfigureNamedOptionForLogging<RabbitMqOptions>(name)
@@ -72,7 +75,7 @@ namespace Orleans.Streaming
             bool useQueuePartitioning = RabbitMqOptions.DefaultUseQueuePartitioning,
             int numberOfQueues = RabbitMqOptions.DefaultNumberOfQueues)
         {
-            Configure<RabbitMqOptions>(ob => ob.Configure(options =>
+            this.Configure<RabbitMqOptions>(ob => ob.Configure(options =>
             {
                 options.HostName = host;
                 options.Port = port;
