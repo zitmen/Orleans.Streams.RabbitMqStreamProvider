@@ -67,7 +67,6 @@ namespace RabbitMqStreamTests
                 .UseLocalhostClustering(siloPort: 11111, gatewayPort: 30000)
                 .Configure<ClusterMembershipOptions>(options =>
                 {
-                    options.ExpectedClusterSize = 2;
                     options.UseLivenessGossip = true;
                     options.ProbeTimeout = TimeSpan.FromSeconds(5);
                     options.NumMissedProbesLimit = 3;
@@ -80,7 +79,6 @@ namespace RabbitMqStreamTests
                     primarySiloEndpoint: new IPEndPoint(IPAddress.Loopback, EndpointOptions.DEFAULT_SILO_PORT))
                 .Configure<ClusterMembershipOptions>(options =>
                 {
-                    options.ExpectedClusterSize = 2;
                     options.UseLivenessGossip = true;
                     options.ProbeTimeout = TimeSpan.FromSeconds(5);
                     options.NumMissedProbesLimit = 3;
