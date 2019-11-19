@@ -1,4 +1,5 @@
 ﻿using RabbitMQ.Client;
+using System;
 
 namespace RabbitMqStreamTests
 {
@@ -21,11 +22,18 @@ namespace RabbitMqStreamTests
                 Password = "guest"
             };
 
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
+            try
             {
-                channel.QueuePurge(Globals.StreamNameSpaceDefault);
-                channel.QueuePurge(Globals.StreamNameSpaceProtoBuf);
+                using (var connection = factory.CreateConnection())
+                using (var channel = connection.CreateModel())
+                {
+                    channel.QueuePurge(Globals.StreamNameSpaceDefault);
+                    channel.QueuePurge(Globals.StreamNameSpaceProtoBuf);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
     }

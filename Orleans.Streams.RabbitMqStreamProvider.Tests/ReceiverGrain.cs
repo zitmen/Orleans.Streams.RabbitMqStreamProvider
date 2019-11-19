@@ -9,13 +9,20 @@ using Orleans.Streams;
 
 namespace RabbitMqStreamTests
 {
-    public interface IReceiverGrain : IGrainWithGuidKey
-    {
-    }
+    public interface IFirstReceiverGrain : IGrainWithGuidKey { }
+    public interface ISecondReceiverGrain : IGrainWithGuidKey { }
 
     [ImplicitStreamSubscription(Globals.StreamNameSpaceDefault)]
     [ImplicitStreamSubscription(Globals.StreamNameSpaceProtoBuf)]
-    public class ReceiverGrain : Grain, IReceiverGrain
+    public class FirstReceiverGrain : ReceiverGrain, IFirstReceiverGrain
+    { }
+
+    [ImplicitStreamSubscription(Globals.StreamNameSpaceDefault)]
+    [ImplicitStreamSubscription(Globals.StreamNameSpaceProtoBuf)]
+    public class SecondReceiverGrain : ReceiverGrain, ISecondReceiverGrain
+    { }
+
+    public abstract class ReceiverGrain : Grain
     {
         private ILogger _logger;
         private StreamSubscriptionHandle<Message> _subscriptionDefault;
@@ -24,7 +31,7 @@ namespace RabbitMqStreamTests
         public override async Task OnActivateAsync()
         {
             await base.OnActivateAsync();
-            _logger = ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger($"{typeof(ReceiverGrain).FullName}.{this.GetPrimaryKey()}");
+            _logger = ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger($"{GetType().FullName}.{this.GetPrimaryKey()}");
             _logger.LogInformation($"OnActivateAsync [{RuntimeIdentity}],[{IdentityString}][{this.GetPrimaryKey()}] from thread {Thread.CurrentThread.Name}");
             _subscriptionDefault = await GetStreamProvider(Globals.StreamProviderNameDefault)
                 .GetStream<Message>(this.GetPrimaryKey(), Globals.StreamNameSpaceDefault)

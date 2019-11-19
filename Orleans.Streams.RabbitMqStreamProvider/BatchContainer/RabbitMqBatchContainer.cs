@@ -40,7 +40,7 @@ namespace Orleans.Streams.BatchContainer
                 .Select((e, i) => Tuple.Create<T, StreamSequenceToken>(e, EventSequenceToken?.CreateSequenceTokenForEvent(i)))
                 .ToList();
 
-        public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
-            => _events.Any(item => shouldReceiveFunc(stream, filterData, item));
+        public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc) =>
+            _events.Any(item => shouldReceiveFunc(stream, filterData, item));
     }
 }

@@ -67,7 +67,6 @@ namespace RabbitMqStreamTests
                 .UseLocalhostClustering(siloPort: 11111, gatewayPort: 30000)
                 .Configure<ClusterMembershipOptions>(options =>
                 {
-                    options.ExpectedClusterSize = 2;
                     options.UseLivenessGossip = true;
                     options.ProbeTimeout = TimeSpan.FromSeconds(5);
                     options.NumMissedProbesLimit = 3;
@@ -80,7 +79,6 @@ namespace RabbitMqStreamTests
                     primarySiloEndpoint: new IPEndPoint(IPAddress.Loopback, EndpointOptions.DEFAULT_SILO_PORT))
                 .Configure<ClusterMembershipOptions>(options =>
                 {
-                    options.ExpectedClusterSize = 2;
                     options.UseLivenessGossip = true;
                     options.ProbeTimeout = TimeSpan.FromSeconds(5);
                     options.NumMissedProbesLimit = 3;
@@ -117,6 +115,7 @@ namespace RabbitMqStreamTests
         public static ISiloHostBuilder ConfigureStreamsAndLogging(this ISiloHostBuilder builder)
         {
             return builder
+                .ConfigureApplicationParts(p => p.AddApplicationPart(typeof(IAggregatorGrain).Assembly))
                 .AddMemoryGrainStorage("PubSubStore")
                 .AddRabbitMqStream(Globals.StreamProviderNameDefault, configurator =>
                 {
@@ -133,7 +132,7 @@ namespace RabbitMqStreamTests
                 .AddRabbitMqStream<ProtoBufBatchContainerSerializer>(Globals.StreamProviderNameProtoBuf, configurator =>
                 {
                     configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
-                        virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceProtoBuf);
+                        virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceDefault);
                     configurator.ConfigureCache(cacheSize: 100, cacheFillingTimeout: TimeSpan.FromSeconds(10));
                     configurator.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
                     configurator.ConfigurePullingAgent(ob => ob.Configure(
@@ -152,6 +151,7 @@ namespace RabbitMqStreamTests
         public static IClientBuilder ConfigureStreamsAndLogging(this IClientBuilder builder)
         {
             return builder
+                .ConfigureApplicationParts(p => p.AddApplicationPart(typeof(IAggregatorGrain).Assembly))
                 .AddRabbitMqStream(Globals.StreamProviderNameDefault, configurator =>
                 {
                     configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
@@ -160,7 +160,7 @@ namespace RabbitMqStreamTests
                 .AddRabbitMqStream<ProtoBufBatchContainerSerializer>(Globals.StreamProviderNameProtoBuf, configurator =>
                 {
                     configurator.ConfigureRabbitMq(host: "localhost", port: ToxiProxyHelpers.RmqProxyPort,
-                        virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceProtoBuf);
+                        virtualHost: "/", user: "guest", password: "guest", queueName: Globals.StreamNameSpaceDefault);
                 })
                 .ConfigureLogging(log => log
                     .ClearProviders()

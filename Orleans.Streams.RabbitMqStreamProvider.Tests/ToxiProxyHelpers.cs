@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using Toxiproxy.Net;
 using Toxiproxy.Net.Toxics;
 

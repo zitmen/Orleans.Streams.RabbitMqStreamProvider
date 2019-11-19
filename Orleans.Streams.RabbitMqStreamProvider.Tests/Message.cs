@@ -19,6 +19,9 @@ namespace RabbitMqStreamTests
         [ProtoMember(4)]
         public readonly string ProcessedBy;
 
+        [ProtoMember(5)]
+        public int Count = 1;
+
         public Message()
         {
         }
@@ -45,7 +48,8 @@ namespace RabbitMqStreamTests
             return msg != null
                 && Id == msg.Id
                 && Delivered == msg.Delivered
-                && ProcessedBy == msg.ProcessedBy;
+                && ProcessedBy == msg.ProcessedBy
+                && Count == msg.Count;
         }
 
         public override int GetHashCode()
@@ -56,6 +60,7 @@ namespace RabbitMqStreamTests
                 hashCode = (hashCode * 397) ^ WorkTimeOutMillis.GetHashCode();
                 hashCode = (hashCode * 397) ^ Delivered.GetHashCode();
                 hashCode = (hashCode * 397) ^ (ProcessedBy?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ Count.GetHashCode();
                 return hashCode;
             }
         }
